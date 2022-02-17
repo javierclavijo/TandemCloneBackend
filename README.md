@@ -9,3 +9,4 @@ Back end for clone of Tandem web app written in Django REST Framework. Developed
 - [ ] Write serializers
 - [ ] Create Postman collection
 - [ ] Write seeders
+- [ ] Add more languages and interests (read them from a JSON file?) 
