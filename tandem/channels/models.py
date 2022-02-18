@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.db import models
-from django.db.models import Q, F
 from django.utils.translation import gettext_lazy as _
 
-from common.models import AvailableLanguage, ProficiencyLevel
+from common.models import AvailableLanguage, ProficiencyLevel, Interest, AbstractChatMessage, \
+    AbstractChatMessageTranslation
 
 
 class Channel(models.Model):
@@ -28,7 +29,7 @@ class Channel(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='start_proficiency_level_gte_end_proficiency_level',
-                check=Q(end_proficiency_level__gte=F('start_proficiency_level'))
+                check=models.Q(end_proficiency_level__gte=models.F('start_proficiency_level'))
             )
         ]
 
@@ -40,7 +41,7 @@ class Membership(models.Model):
         ADMIN = 'A', _('Administrator')
 
     user = models.ForeignKey(
-        to='users.CustomUser',
+        to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='memberships'
     )
@@ -59,3 +60,45 @@ class Membership(models.Model):
         constraints = [
             models.UniqueConstraint(name='unique_user_channel', fields=['user', 'channel'])
         ]
+
+
+class ChannelInterest(models.Model):
+    channel = models.ForeignKey(
+        to='Channel',
+        on_delete=models.CASCADE,
+        related_name='interests'
+    )
+    interest = models.PositiveIntegerField(
+        choices=Interest.choices
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_channel_interest',
+                fields=['channel', 'interest']
+            )
+        ]
+
+
+class ChannelChatMessage(AbstractChatMessage):
+    channel = models.ForeignKey(
+        to='Channel',
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+
+
+class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
+    original_message = models.ForeignKey(
+        to='ChannelChatMessage',
+        on_delete=models.CASCADE,
+        related_name='translations'
+    )
+
+    constraints = [
+        models.UniqueConstraint(
+            name='channel_chat_unique_language_original_message',
+            fields=['language', 'original_message']
+        )
+    ]

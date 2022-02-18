@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -18,3 +19,41 @@ class ProficiencyLevel(models.TextChoices):
     C1 = 'C1'
     C2 = 'C2'
     NATIVE = 'N'
+
+
+class Interest(models.IntegerChoices):
+    SPORTS = 0, _('Sports')
+    MUSIC = 1, _('Music')
+    LITERATURE = 2, _('Literature')
+    CINEMA = 3, _('Cinema')
+    VIDEO_GAMES = 4, _('Video games')
+
+
+class AbstractChatMessage(models.Model):
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)ss"
+    )
+    content = models.TextField(
+        max_length=2048
+    )
+    timestamp = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        abstract = True
+
+
+class AbstractChatMessageTranslation(models.Model):
+    language = models.CharField(
+        max_length=2,
+        choices=AvailableLanguage.choices
+    )
+    translated_content = models.TextField(
+        max_length=4096
+    )
+
+    class Meta:
+        abstract = True
