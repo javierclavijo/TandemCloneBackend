@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from common.models import AvailableLanguage, ProficiencyLevel, Interest, AbstractChatMessage, \
-    AbstractChatMessageTranslation
+    AbstractChatMessageTranslation, AbstractChatMessageCorrection
 
 
 class Channel(models.Model):
@@ -90,15 +90,29 @@ class ChannelChatMessage(AbstractChatMessage):
 
 
 class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
-    original_message = models.ForeignKey(
+    message = models.ForeignKey(
         to='ChannelChatMessage',
         on_delete=models.CASCADE,
         related_name='translations'
     )
 
-    constraints = [
-        models.UniqueConstraint(
-            name='channel_chat_unique_language_original_message',
-            fields=['language', 'original_message']
-        )
-    ]
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='channel_unique_language_message',
+                fields=['language', 'original_message']
+            )
+        ]
+
+
+class ChannelChatMessageCorrection(AbstractChatMessageCorrection):
+    message = models.OneToOneField(
+        to='ChannelChatMessage',
+        on_delete=models.CASCADE,
+        related_name='correction',
+    )
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='author'
+    )

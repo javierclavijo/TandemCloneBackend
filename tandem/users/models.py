@@ -77,15 +77,25 @@ class UserChatMessage(AbstractChatMessage):
 
 
 class UserChatMessageTranslation(AbstractChatMessageTranslation):
-    original_message = models.ForeignKey(
+    # TODO check if the model makes sense (especially its constraint)
+    message = models.ForeignKey(
         to='UserChatMessage',
         on_delete=models.CASCADE,
         related_name='translations'
     )
 
-    constraints = [
-        models.UniqueConstraint(
-            name='user_chat_unique_language_original_message',
-            fields=['language', 'original_message']
-        )
-    ]
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name='user_unique_language_message',
+                fields=['language', 'message']
+            )
+        ]
+
+
+class UserChatMessageCorrection(models.Model):
+    message = models.OneToOneField(
+        to='UserChatMessage',
+        on_delete=models.CASCADE,
+        related_name='correction',
+    )

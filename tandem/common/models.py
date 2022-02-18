@@ -47,11 +47,26 @@ class AbstractChatMessage(models.Model):
 
 
 class AbstractChatMessageTranslation(models.Model):
+    # TODO: add original language field to translation and correction models
+    # TODO: merge both models
     language = models.CharField(
         max_length=2,
         choices=AvailableLanguage.choices
     )
     translated_content = models.TextField(
+        max_length=4096
+    )
+
+    class Meta:
+        abstract = True
+
+
+class AbstractChatMessageCorrection(models.Model):
+    language = models.CharField(
+        max_length=2,
+        choices=AvailableLanguage.choices
+    )
+    corrected_content = models.TextField(
         max_length=4096
     )
 
