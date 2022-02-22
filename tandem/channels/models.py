@@ -100,7 +100,7 @@ class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
         constraints = [
             models.UniqueConstraint(
                 name='channel_unique_language_message',
-                fields=['language', 'original_message']
+                fields=['language', 'message']
             )
         ]
 
