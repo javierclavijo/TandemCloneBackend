@@ -27,4 +27,9 @@ populate the database. This seems much more flexible and easy to use than Django
 figure out how to use the latter effectively).
 
 Edit: this has proved successful so far. The command allows me to create a superuser and any number of users with their
-associated friends, languages and interests. I just have to expand it to create messages and channels. 
+associated friends, languages and interests. I just have to expand it to create messages and channels.
+
+Edit 2: I have finished the seeder for now, excluding chat message translation and correction classes. It's been a
+success. Although it's a bit slow (as it involves quite a lot of iterations), it will definitely provide a solid base
+for developing and testing. And if I need the Django fixtures that I mentioned earlier, I can simply
+run `python manage.py dumpdata` after running the seeder script. 

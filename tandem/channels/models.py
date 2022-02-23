@@ -7,6 +7,9 @@ from common.models import AvailableLanguage, ProficiencyLevel, Interest, Abstrac
 
 
 class Channel(models.Model):
+    def __str__(self):
+        return self.name
+
     name = models.CharField(max_length=64, )
     description = models.TextField(
         blank=True,

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -39,7 +40,7 @@ class AbstractChatMessage(models.Model):
         max_length=2048
     )
     timestamp = models.DateTimeField(
-        auto_now_add=True
+        default=timezone.now
     )
 
     class Meta:
