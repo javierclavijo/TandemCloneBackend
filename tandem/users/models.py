@@ -8,7 +8,8 @@ from common.models import AvailableLanguage, ProficiencyLevel, Interest, Abstrac
 
 class CustomUser(AbstractUser):
     friends = models.ManyToManyField(
-        to="self"
+        to="self",
+        blank=True
     )
     description = models.TextField(
         blank=True,
