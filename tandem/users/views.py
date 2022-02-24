@@ -13,6 +13,9 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    class Meta:
+        model = get_user_model()
+
 
 class GroupViewSet(viewsets.ModelViewSet):
     """
@@ -21,3 +24,6 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    class Meta:
+        model = Group

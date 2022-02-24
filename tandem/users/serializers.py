@@ -41,8 +41,10 @@ class UserInterestSerializer(serializers.ModelSerializer):
 
 
 class UserMembershipSerializer(serializers.ModelSerializer):
-    """Channel membership serializer to use in user serializer."""
+    """Membership serializer to use in user serializer. Similar to ChannelMembershipSerializer, but includes the
+    channel's ID instead of the user's. """
     role = serializers.CharField(source='get_role_display')
+    channel = serializers.HyperlinkedRelatedField(view_name="channel-detail", read_only=True)
 
     class Meta:
         model = Membership

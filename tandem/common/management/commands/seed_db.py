@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.utils.timezone import make_aware
 from faker import Faker
 
-from channels.models import Channel, Membership, ChannelChatMessage
+from channels.models import Channel, Membership, ChannelChatMessage, ChannelInterest
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from users.models import UserLanguage, UserInterest, UserChatMessage
 
@@ -135,12 +135,20 @@ class Command(BaseCommand):
             channel = Channel(
                 name=fake.slug(),
                 description=fake.paragraph(nb_sentences=5),
-                language=random.choice(languages),
+                language=language,
                 start_proficiency_level=proficiency_levels[0],
                 end_proficiency_level=proficiency_levels[-1]
             )
             channels.append(channel)
             channel.save()
+
+            # Add a random interest to the channel
+            channel_interest = ChannelInterest(
+                channel=channel,
+                interest=random.choice(interests)
+            )
+            channel_interest.save()
+
             self.stdout.write(self.style.SUCCESS(f'Successfully created channel "{channel.name}"'))
 
         # Create channel memberships and messages for all users
