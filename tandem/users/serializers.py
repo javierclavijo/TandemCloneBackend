@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 
+from channels.models import Membership
 from users.models import UserLanguage, UserInterest
 
 
@@ -24,6 +25,11 @@ class UserLanguageSerializer(serializers.ModelSerializer):
 
 
 class UserInterestSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        """Return the interest's display name as the instance's representation"""
+        ret = super(UserInterestSerializer, self).to_representation(instance)
+        return ret['interest_display']
+
     interest_display = serializers.CharField(source='get_interest_display')
 
     class Meta:
@@ -34,9 +40,23 @@ class UserInterestSerializer(serializers.ModelSerializer):
         ]
 
 
+class UserMembershipSerializer(serializers.ModelSerializer):
+    """Channel membership serializer to use in user serializer."""
+    role = serializers.CharField(source='get_role_display')
+
+    class Meta:
+        model = Membership
+        fields = [
+            'channel',
+            'role'
+        ]
+
+
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    """User serializer class. Does not include messages and related models."""
     languages = UserLanguageSerializer(many=True)
     interests = UserInterestSerializer(many=True)
+    memberships = UserMembershipSerializer(many=True)
 
     class Meta:
         model = get_user_model()
@@ -50,6 +70,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'languages',
             'interests',
             'groups',
+            'memberships'
         ]
 
 
