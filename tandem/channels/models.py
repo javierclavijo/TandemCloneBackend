@@ -91,6 +91,9 @@ class ChannelChatMessage(AbstractChatMessage):
         related_name='messages'
     )
 
+    class Meta:
+        ordering = ['-timestamp']
+
 
 class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
     message = models.ForeignKey(

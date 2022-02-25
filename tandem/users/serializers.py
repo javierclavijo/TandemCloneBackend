@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 from rest_framework import serializers
 
 from channels.models import Membership
-from users.models import UserLanguage, UserInterest
+from users.models import UserLanguage, UserInterest, UserChatMessage
 
 
 class UserLanguageSerializer(serializers.ModelSerializer):
@@ -84,3 +84,20 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
             'url',
             'name'
         ]
+
+
+class UserChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserChatMessage
+        fields = [
+            'author',
+            'recipient',
+            'content',
+            'timestamp'
+        ]
+
+# class UserChatSerializer(serializers.Serializer):
+#     messages = UserChatMessageSerializer(
+#         queryset=UserChatMessage.objects.filter(author),
+#         many=True
+#     )

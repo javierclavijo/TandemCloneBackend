@@ -53,3 +53,13 @@ for them.
 
 I should investigate if there's a better way to store user interests. It seems that the Django Choices classes are a bit
 restrictive. Also, it might be better if the user field were a ManyToManyField.
+
+Edit: As of now, I have ruled out this possibility, as it doesn't seem to provide any benefits (at least for now). I
+have defined the serializer for the Channel mode without too much trouble. So there goes another part of the base CRUD.
+The next issue is chat serializers. I have not defined chat models, but message models --a chat model would only provide
+the advantage of providing a common ID for all messages from the same chat. The challenge now is to implement a
+serializer which fetches a channel's or a pair of users' messages, creating the chat. It seems simple at first, but I
+haven't been able to identify how to do it exactly. My first approach has been to pass a filtered queryset to the
+serializer's message field, but I don't know where the model object is in the serializer class. I'll probably have to
+override a method or two. I'll keep looking into it. Once this is done, there only remain the translation and correction
+classes, which should be comparatively straightforward to implement. Or maybe not. We'll see.

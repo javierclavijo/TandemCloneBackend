@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from channels.models import Channel, Membership, ChannelInterest
+from channels.models import Channel, Membership, ChannelInterest, ChannelChatMessage
 
 
 class ChannelMembershipSerializer(serializers.ModelSerializer):
@@ -30,6 +30,18 @@ class ChannelInterestSerializer(serializers.ModelSerializer):
         fields = [
             'interest',
             'interest_display'
+        ]
+
+
+class ChannelChatMessageSerializer(serializers.ModelSerializer):
+    author = serializers.HyperlinkedRelatedField(view_name='customuser-detail', read_only=True)
+
+    class Meta:
+        model = ChannelChatMessage
+        fields = [
+            'author',
+            'content',
+            'timestamp'
         ]
 
 
