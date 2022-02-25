@@ -108,3 +108,7 @@ Edit: implementing the user chat view was a bit harder than expected, due mostly
 action URLs to use regex instead of the usual Django URL. Also, it wasn't really too well documented. Apparently, it's
 easier to do it with nested routers using the drf-nested-routers library. But I didn't want to include a library for
 what is potentially a one-off use, and on top of that having to learn the library itself.
+
+So I'm in the process of creating a Postman collection for the project, as the standard API viewer is a bit too basic
+for the project's needs. In fact, I may instead install a Swagger documentation model, and use that to try out the
+endpoints. 
