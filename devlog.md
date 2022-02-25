@@ -63,3 +63,43 @@ haven't been able to identify how to do it exactly. My first approach has been t
 serializer's message field, but I don't know where the model object is in the serializer class. I'll probably have to
 override a method or two. I'll keep looking into it. Once this is done, there only remain the translation and correction
 classes, which should be comparatively straightforward to implement. Or maybe not. We'll see.
+
+## `25/02/2022`
+
+It was hard, but I managed to create a chat endpoint in the end. It turns out that I had been placing too much
+responsibility into serializers, and the appropriate thing to do was using a controller (in Django-speak, a view). I
+have learned that serializers' responsibilities should be limited to simple CRUD operations, and that I should avoid
+returning complex queries for serializers --these complex querysets must rather be passed as arguments to serializers
+upon instancing them inside controllers. This means that I probably will have to rewrite many serializers and create new
+ones (taking into account that I will need endpoints to create and update resources, which I haven't really taken into
+account yet).
+
+The next task is to create a controller for user chats, which should be rather straightforward. Then, I probably will
+create the endpoints for creating and updating resources. In fact, I'm going to try to list the basic ones:
+
+- User:
+    - CRUD:
+        - User creation
+        - User update
+        - Add user as friend
+    - Chat:
+        - Send message
+        - Edit message
+        - Delete message
+- Channel:
+    - CRUD:
+        - Create channel
+        - Update channel
+        - Add user to channel
+        - Update user's role
+    - Chat:
+        - Send message
+        - Edit message
+        - Delete message
+
+In this process, I will need to verify that the data required and returned by the serializers is correct, that it has an
+appropriate format (e.g. string, hyperlink) and that no unnecessary data is sent (i.e. IDs and such).
+
+Regarding other features, especially message translations and corrections, I have decided to implement them later on,
+then the project has been fleshed out a bit more. The models are there, and they will be useful eventually, but they
+represent features that are quite accessory. So I will set them a side for a bit.

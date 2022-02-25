@@ -85,6 +85,11 @@ class ChannelInterest(models.Model):
 
 
 class ChannelChatMessage(AbstractChatMessage):
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_channel_chat_messages"
+    )
     channel = models.ForeignKey(
         to='Channel',
         on_delete=models.CASCADE,

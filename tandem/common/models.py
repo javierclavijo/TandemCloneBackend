@@ -31,11 +31,6 @@ class Interest(models.IntegerChoices):
 
 
 class AbstractChatMessage(models.Model):
-    author = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)ss"
-    )
     content = models.TextField(
         max_length=2048
     )

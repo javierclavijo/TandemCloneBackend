@@ -62,10 +62,15 @@ class UserInterest(models.Model):
 
 
 class UserChatMessage(AbstractChatMessage):
+    author = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_user_chat_messages"
+    )
     recipient = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='messages'
+        related_name='received_user_chat_messages'
     )
 
     class Meta:
