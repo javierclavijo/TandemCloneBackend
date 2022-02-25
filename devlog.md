@@ -103,3 +103,8 @@ appropriate format (e.g. string, hyperlink) and that no unnecessary data is sent
 Regarding other features, especially message translations and corrections, I have decided to implement them later on,
 then the project has been fleshed out a bit more. The models are there, and they will be useful eventually, but they
 represent features that are quite accessory. So I will set them a side for a bit.
+
+Edit: implementing the user chat view was a bit harder than expected, due mostly to the fact that DRF forces custom
+action URLs to use regex instead of the usual Django URL. Also, it wasn't really too well documented. Apparently, it's
+easier to do it with nested routers using the drf-nested-routers library. But I didn't want to include a library for
+what is potentially a one-off use, and on top of that having to learn the library itself.

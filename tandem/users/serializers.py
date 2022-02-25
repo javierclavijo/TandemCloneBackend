@@ -95,9 +95,3 @@ class UserChatMessageSerializer(serializers.ModelSerializer):
             'content',
             'timestamp'
         ]
-
-# class UserChatSerializer(serializers.Serializer):
-#     messages = UserChatMessageSerializer(
-#         queryset=UserChatMessage.objects.filter(author),
-#         many=True
-#     )

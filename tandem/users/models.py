@@ -74,6 +74,7 @@ class UserChatMessage(AbstractChatMessage):
     )
 
     class Meta:
+        ordering = ['-timestamp']
         constraints = [
             models.CheckConstraint(
                 name='author_not_equals_recipient',
