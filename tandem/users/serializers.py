@@ -57,8 +57,8 @@ class UserMembershipSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     """User serializer class. Does not include messages and related models."""
     languages = UserLanguageSerializer(many=True)
-    interests = UserInterestSerializer(many=True)
-    memberships = UserMembershipSerializer(many=True)
+    interests = UserInterestSerializer(many=True, required=False)
+    memberships = UserMembershipSerializer(many=True, read_only=True)
 
     class Meta:
         model = get_user_model()

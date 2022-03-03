@@ -111,4 +111,16 @@ what is potentially a one-off use, and on top of that having to learn the librar
 
 So I'm in the process of creating a Postman collection for the project, as the standard API viewer is a bit too basic
 for the project's needs. In fact, I may instead install a Swagger documentation model, and use that to try out the
-endpoints. 
+endpoints.
+
+`03/03/2022`
+
+My main objective today will be implementing Swagger documentation in the project. I'm going to try using the
+drf-spectacular library.
+
+Edit: I've added the library and it works, but setting up Swagger properly is too much work right now and I'm in a bit
+of a hurry. I'll just use Postman for now and add documentation later. So there we go, I'll create the endpoints in the
+order stated above.
+
+Edit 2: it was a bit confusing, but I made it. I had to save the user and its related objects directly in the view, as
+using the user serializer was too confusing. Sadly, I wasted too much time on it.

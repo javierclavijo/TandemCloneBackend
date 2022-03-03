@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.db import transaction
 from django.db.models import Q
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from users.models import UserChatMessage
+from common.models import AvailableLanguage, ProficiencyLevel
+from users.models import UserChatMessage, UserLanguage, UserInterest
 from users.serializers import UserSerializer, GroupSerializer, UserChatMessageSerializer
 
 
@@ -16,7 +18,16 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = get_user_model().objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == 'create':
+            permission_classes = []
+        else:
+            permission_classes = [permissions.IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     @action(
         url_path=r'chat/(?P<other_user>[0-9]+)',
@@ -39,6 +50,37 @@ class UserViewSet(viewsets.ModelViewSet):
             many=True
         )
         return Response(message_serializer.data)
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        """
+        Creates an user and its associated language and interest objects
+        """
+        data = request.data
+        user_object = get_user_model().objects.create_user(
+            username=data["username"],
+            email=data["email"],
+            password=data["password"],
+            is_staff=False
+        )
+        user_object.save()
+
+        for user_language in data["languages"]:
+            UserLanguage.objects.create(
+                user=user_object,
+                language=dict(AvailableLanguage.choices)[user_language['language']],
+                level=dict(ProficiencyLevel.choices)[user_language['level']]
+            )
+
+        for user_interest in data["interests"]:
+            UserInterest.objects.create(
+                user=user_object,
+                interest=user_interest
+            )
+
+        serializer = self.get_serializer(user_object)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     class Meta:
         model = get_user_model()
