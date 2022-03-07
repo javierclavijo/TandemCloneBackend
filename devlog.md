@@ -79,9 +79,13 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
 
 - User:
     - CRUD:
-        - User creation
-        - User update
-        - Add user as friend
+        - [x] User creation
+        - [x] Set password
+        - [x] Set username
+        - [ ] Set user description
+        - [ ] Add user as friend
+        - [ ] Set languages (list)
+        - [ ] Set interests (list)
     - Chat:
         - Send message
         - Edit message
@@ -132,4 +136,4 @@ write the user update controllers, and I finally discovered the existence of the
 Rest's ModelViewSet. But I still wanted to somehow filter the request data to avoid users updating restricted
 attributes, and DRF's Request object forbid me from modifying the request object. I'll give it another try.
 
-Edit: well, it wasn't that hard in the end, I just filtered through 
+Edit: well, it wasn't that hard in the end, I just copied ModelViewSet.update and filtered the request's data before passing it on to the serializer. It involves code duplication, but right now I think it's much more important to get stuff done and then I'll refactor later. Sadly, I forgot to push the commit with the todo list, but I'll get it later.
