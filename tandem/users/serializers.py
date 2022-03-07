@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 
@@ -55,6 +56,12 @@ class UserMembershipSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    def to_representation(self, instance):
+        """Exclude password field from the object's serialization"""
+        ret = super(UserSerializer, self).to_representation(instance)
+        del ret['password']
+        return ret
+
     """User serializer class. Does not include messages and related models."""
     languages = UserLanguageSerializer(many=True)
     interests = UserInterestSerializer(many=True, required=False)
@@ -66,6 +73,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'url',
             'username',
+            'password',
             'email',
             'description',
             'friends',
@@ -74,6 +82,17 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'groups',
             'memberships'
         ]
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super(UserSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        try:
+            validated_data['password'] = make_password(validated_data['password'])
+        except KeyError:
+            pass
+        return super().update(instance, validated_data)
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):

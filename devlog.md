@@ -124,3 +124,12 @@ order stated above.
 
 Edit 2: it was a bit confusing, but I made it. I had to save the user and its related objects directly in the view, as
 using the user serializer was too confusing. Sadly, I wasted too much time on it.
+
+`07/03/2022`
+
+I have to upload the devlog from last Friday, but anyway I was unable to advance a lot. I spent a lot of time trying to
+write the user update controllers, and I finally discovered the existence of the partial_update endpoint in Django
+Rest's ModelViewSet. But I still wanted to somehow filter the request data to avoid users updating restricted
+attributes, and DRF's Request object forbid me from modifying the request object. I'll give it another try.
+
+Edit: well, it wasn't that hard in the end, I just filtered through 

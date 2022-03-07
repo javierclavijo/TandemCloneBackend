@@ -82,6 +82,57 @@ class UserViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @action(
+        detail=True,
+        methods=['patch']
+    )
+    def set_username(self, request, *args, **kwargs):
+        """Update the user's username attribute. Filters the received request data to avoid setting unwanted data."""
+        # TODO: consider whether to avoid duplicate code. For now, it just works, so let's leave it like this.
+        instance = self.get_object()
+
+        try:
+            username = request.data["username"]
+        except KeyError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        data = {"username": username}
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=['patch']
+    )
+    def set_password(self, request, *args, **kwargs):
+        """Update the user's password. Filters the received request data to avoid setting unwanted data."""
+        instance = self.get_object()
+
+        try:
+            password = request.data["password"]
+        except KeyError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        data = {"password": password}
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
     class Meta:
         model = get_user_model()
 
