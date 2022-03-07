@@ -73,10 +73,8 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
 - User:
     - CRUD:
         - [x] User creation
-        - [x] Change username
-        - [ ] Change email
+        - [x] Change username, email and description (partial_update)
         - [x] Change password
-        - [x] Change description
         - [x] Update friends (list)
         - [x] Update languages (list)
         - [ ] Update interests (list)
@@ -167,3 +165,5 @@ through WebSockets or something).
 And actually, I think I'm going to join the user partial update controllers into a single controller. The code I have
 written so far for those endpoints feels like a workaround. I probably should write a serializer exclusively for
 updating the user's password and make a single view for that.
+
+[//]: # (TODO: ask mr. Ortega what to do with interest fields --whether I should make them JSONFields)

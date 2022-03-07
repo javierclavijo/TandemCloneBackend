@@ -7,10 +7,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from common.models import AvailableLanguage, ProficiencyLevel
+from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from users.models import UserChatMessage, UserLanguage, UserInterest
 from users.serializers import UserSerializer, GroupSerializer, UserChatMessageSerializer, UserLanguageSerializer, \
-    UserPasswordUpdateSerializer
+    UserPasswordUpdateSerializer, UserInterestSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -159,9 +159,8 @@ class UserViewSet(viewsets.ModelViewSet):
             except KeyError:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            # First, find the object for the language if there's already one for this user. This way, we also avoid
-            # integrity errors. If more than one object is sent for the same language, it will be set to the last
-            # one, avoiding duplication.
+            # First, find the object for the language if there's already one for this user. This way, integrity errors
+            # are avoided.
             try:
                 # If an object is found, update it with the level set in the request
                 language_object = instance.languages.get(language=language_name)
@@ -189,6 +188,58 @@ class UserViewSet(viewsets.ModelViewSet):
 
         # Delete other languages from the user's language list
         instance.languages.exclude(id__in=[language.id for language in new_language_objects]).delete()
+
+        # The user object is not modified at all. Instead, it's used to get the data for the response.
+        serializer = self.get_serializer(instance=instance)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=['patch']
+    )
+    @transaction.atomic()
+    def set_interests(self, request, *args, **kwargs):
+        """Update the user's interest list. Must receive a list of interest values (from the Interest enum)"""
+        instance = self.get_object()
+        try:
+            interests = request.data["interests"]
+        except KeyError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        new_interest_objects = []
+        interest_choices = dict(Interest.choices)
+        for interest in interests:
+            try:
+                interest_choices[interest]
+            except KeyError:
+                # If any interest is not a valid interest, return 400 status code
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            # First, find the object for the interest if there's already one for this user. This way, integrity errors
+            # are avoided.
+            try:
+                # If an object is found, add it to the new list of interests.
+                interest_object = UserInterest.objects.get(user=instance, interest=interest)
+                new_interest_objects.append(interest_object)
+            except UserInterest.DoesNotExist:
+                # If no object is found, create and save a new one
+                data = {
+                    'user': instance.id,
+                    'interest': interest
+                }
+                serializer = UserInterestSerializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                new_interest_objects.append(serializer.instance)
+
+        # Delete other interests from the user's language list
+        instance.languages.exclude(id__in=[interest.id for interest in new_interest_objects]).delete()
 
         # The user object is not modified at all. Instead, it's used to get the data for the response.
         serializer = self.get_serializer(instance=instance)

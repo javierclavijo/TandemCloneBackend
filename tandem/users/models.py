@@ -59,6 +59,7 @@ class UserInterest(models.Model):
                 fields=['user', 'interest']
             )
         ]
+    # TODO: consider whether to make this into a JSONField
 
 
 class UserChatMessage(AbstractChatMessage):
