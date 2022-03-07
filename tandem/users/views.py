@@ -9,7 +9,8 @@ from rest_framework.response import Response
 
 from common.models import AvailableLanguage, ProficiencyLevel
 from users.models import UserChatMessage, UserLanguage, UserInterest
-from users.serializers import UserSerializer, GroupSerializer, UserChatMessageSerializer, UserLanguageSerializer
+from users.serializers import UserSerializer, GroupSerializer, UserChatMessageSerializer, UserLanguageSerializer, \
+    UserPasswordUpdateSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -27,6 +28,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
+        # TODO: add a permission to check whether request.user matches the ViewSet's instance (or is admin)
         if self.action == 'create':
             permission_classes = []
         else:
@@ -58,7 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         """
-        Creates an user and its associated language and interest objects
+        Creates a user and its associated language and interest objects
         """
         data = request.data
         user_object = self.Meta.model.objects.create_user(
@@ -90,65 +92,17 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=True,
         methods=['patch']
     )
-    def set_username(self, request, *args, **kwargs):
-        """Update the user's username attribute. Filters the received request data to avoid setting unwanted data."""
-        # TODO: consider whether to avoid duplicate code. For now, it just works, so let's leave it like this.
-        instance = self.get_object()
-        try:
-            username = request.data["username"]
-        except KeyError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        data = {"username": username}
-        serializer = self.get_serializer(instance, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
-
-    @action(
-        detail=True,
-        methods=['patch']
-    )
     def set_password(self, request, *args, **kwargs):
-        """Update the user's password. Filters the received request data to avoid setting unwanted data."""
+        """Update the user's password. Uses a custom serializer class."""
         instance = self.get_object()
         try:
             password = request.data["password"]
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # Filter the received request data to avoid setting unwanted data
         data = {"password": password}
-        serializer = self.get_serializer(instance, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
-
-    @action(
-        detail=True,
-        methods=['patch']
-    )
-    def set_description(self, request, *args, **kwargs):
-        """Update the user's description. Filters the received request data to avoid setting unwanted data."""
-        instance = self.get_object()
-        try:
-            description = request.data["description"]
-        except KeyError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        data = {"description": description}
-        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer = UserPasswordUpdateSerializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
@@ -197,6 +151,7 @@ class UserViewSet(viewsets.ModelViewSet):
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        new_language_objects = []
         for language in new_languages:
             try:
                 language_name = language['language']
@@ -218,6 +173,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
+                new_language_objects.append(language_object)
 
             except UserLanguage.DoesNotExist:
                 # If no object is found, create and save a new one
@@ -229,8 +185,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 serializer = UserLanguageSerializer(data=data)
                 serializer.is_valid(raise_exception=True)
                 serializer.save()
+                new_language_objects.append(serializer.instance)
 
-        # The user object is actually not modified at all. Instead, it's used to get the data for the response.
+        # Delete other languages from the user's language list
+        instance.languages.exclude(id__in=[language.id for language in new_language_objects]).delete()
+
+        # The user object is not modified at all. Instead, it's used to get the data for the response.
         serializer = self.get_serializer(instance=instance)
 
         if getattr(instance, '_prefetched_objects_cache', None):

@@ -1,10 +1,3 @@
-## Todo List
-
-- [ ] Write serializers
-- [ ] Create Postman collection
-- [ ] Write seeders
-- [ ] Add more languages and interests (read them from a JSON file?)
-
 # Dev log
 
 ## `18/02/2022`
@@ -80,12 +73,12 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
 - User:
     - CRUD:
         - [x] User creation
-        - [ ] Change username
+        - [x] Change username
         - [ ] Change email
-        - [ ] Change password
-        - [ ] Change description
-        - [ ] Update friends (list)
-        - [ ] Update languages (list)
+        - [x] Change password
+        - [x] Change description
+        - [x] Update friends (list)
+        - [x] Update languages (list)
         - [ ] Update interests (list)
     - Chat:
         - [ ] Send message
@@ -142,7 +135,7 @@ they will be much simpler than what I just said.
 
 I'm going to try adding those controllers now. By making them separate, the user may be able to update their profile
 through separate API calls, using different fields (instead of a large form for all fields). Besides, updating your
-profile is not something you do constantly, so this shouldn't cause any server overhead.  
+profile is not something you do constantly, so this shouldn't cause any server overhead.
 
 `07/03/2022`
 
@@ -161,4 +154,16 @@ of PKs. But it works, and it seems counter-productive to waste time trying to ch
 I've just added the user's language list update endpoint. It wasn't too hard, as I implemented everything in the URL. An
 interesting thing I've realized is that, when using serializers with nested fields, there's no need to update those
 fields through the related model. You can update them through the nested fields' serializers, and return the related
-model serializer's data. 
+model serializer's data.
+
+Edit 3: I've finally added the devlog changes from the other day. I'm going to try to make the rest of the CRUD
+endpoints today, following the templates I have created in the ones I have already made. Then, I'll probably write tests
+for the CRUD endpoints --I don't want to leave tests aside for too long. And, if I can, I'll add the Swagger
+documentation for the endpoints. That will take a while, but the sooner I make it, the better. The chat endpoints can
+wait, especially considering that I haven't set up WebSockets yet and don't really know whether those endpoints will be
+necessary, at least as regular HTTP controllers (maybe there's a better way to implement sending chat messages, etc.
+through WebSockets or something).
+
+And actually, I think I'm going to join the user partial update controllers into a single controller. The code I have
+written so far for those endpoints feels like a workaround. I probably should write a serializer exclusively for
+updating the user's password and make a single view for that.

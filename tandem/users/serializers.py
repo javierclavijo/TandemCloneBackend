@@ -56,16 +56,12 @@ class UserMembershipSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-    def to_representation(self, instance):
-        """Exclude password field from the object's serialization"""
-        ret = super(UserSerializer, self).to_representation(instance)
-        del ret['password']
-        return ret
-
-    """User serializer class. Does not include messages and related models."""
-    languages = UserLanguageSerializer(many=True)
-    interests = UserInterestSerializer(many=True, required=False)
+    """User serializer class. Does not include messages and other models, nor the user's password. Related fields are
+    set to be read only to avoid unwanted updates, as they should be done through custom controllers (views). """
+    languages = UserLanguageSerializer(many=True, read_only=True)
+    interests = UserInterestSerializer(many=True, required=False, read_only=True)
     memberships = UserMembershipSerializer(many=True, read_only=True)
+    email = serializers.EmailField(allow_blank=False, label='Email address', max_length=254, required=True)
 
     class Meta:
         model = get_user_model()
@@ -73,15 +69,26 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'url',
             'username',
-            'password',
             'email',
             'description',
             'friends',
             'languages',
             'interests',
-            'groups',
             'memberships'
         ]
+
+
+class UserPasswordUpdateSerializer(UserSerializer):
+    """Serializer to update user's password."""
+
+    def to_representation(self, instance):
+        ret = super(UserPasswordUpdateSerializer, self).to_representation(instance)
+        del ret['password']
+        return ret
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'password']
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
@@ -91,7 +98,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         try:
             validated_data['password'] = make_password(validated_data['password'])
         except KeyError:
-            pass
+            return serializers.ValidationError("Attribute 'password' was not sent.")
         return super().update(instance, validated_data)
 
 
