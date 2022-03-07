@@ -155,6 +155,30 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+    @action(
+        detail=True,
+        methods=['patch']
+    )
+    def set_friends(self, request, *args, **kwargs):
+        """Update the user's friend list. Filters the received request data to avoid setting unwanted data."""
+        instance = self.get_object()
+        try:
+            friends = request.data["friends"]
+        except KeyError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        data = {"friends": friends}
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
     class Meta:
         model = get_user_model()
 
