@@ -205,7 +205,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     @transaction.atomic()
     def set_interests(self, request, *args, **kwargs):
-        """Update the user's interest list. Must receive a list of interest values (from the Interest enum)"""
+        """Update the user's interest list. Must receive a list of interest values (from the Interest enum)."""
         instance = self.get_object()
         try:
             interests = request.data["interests"]
@@ -239,7 +239,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 new_interest_objects.append(serializer.instance)
 
         # Delete other interests from the user's language list
-        instance.languages.exclude(id__in=[interest.id for interest in new_interest_objects]).delete()
+        instance.interests.exclude(id__in=[interest.id for interest in new_interest_objects]).delete()
 
         # The user object is not modified at all. Instead, it's used to get the data for the response.
         serializer = self.get_serializer(instance=instance)

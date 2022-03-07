@@ -31,11 +31,12 @@ class UserInterestSerializer(serializers.ModelSerializer):
         ret = super(UserInterestSerializer, self).to_representation(instance)
         return ret['interest_display']
 
-    interest_display = serializers.CharField(source='get_interest_display')
+    interest_display = serializers.CharField(source='get_interest_display', read_only=True)
 
     class Meta:
         model = UserInterest
         fields = [
+            'user',
             'interest',
             'interest_display'
         ]
