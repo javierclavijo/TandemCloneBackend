@@ -142,3 +142,8 @@ stuff done and then I'll refactor later. Sadly, I forgot to push the commit with
 
 Edit 2: I've just added the controller to set an user's friends. It's a bit awkward, as it needs a list of URLs instead
 of PKs. But it works, and it seems counter-productive to waste time trying to change that.
+
+I've just added the user's language list update endpoint. It wasn't too hard, as I implemented everything in the URL. An
+interesting thing I've realized is that, when using serializers with nested fields, there's no need to update those
+fields through the related model. You can update them through the nested fields' serializers, and return the related
+model serializer's data. 
