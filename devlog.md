@@ -80,26 +80,28 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
 - User:
     - CRUD:
         - [x] User creation
-        - [x] Set password
-        - [x] Set username
-        - [x] Set user description
-        - [ ] Set friends (list)
-        - [ ] Set languages (list)
-        - [ ] Set interests (list)
+        - [ ] Change username
+        - [ ] Change email
+        - [ ] Change password
+        - [ ] Change description
+        - [ ] Update friends (list)
+        - [ ] Update languages (list)
+        - [ ] Update interests (list)
     - Chat:
-        - Send message
-        - Edit message
-        - Delete message
+        - [ ] Send message
+        - [ ] Edit message
+        - [ ] Delete message
 - Channel:
     - CRUD:
-        - Create channel
-        - Update channel
-        - Add user to channel
-        - Update user's role
+        - [ ] Create channel
+        - [ ] Update channel
+        - [ ] Add user to channel
+        - [ ] Remove user from channel
+        - [ ] Update user's role
     - Chat:
-        - Send message
-        - Edit message
-        - Delete message
+        - [ ] Send message
+        - [ ] Edit message
+        - [ ] Delete message
 
 In this process, I will need to verify that the data required and returned by the serializers is correct, that it has an
 appropriate format (e.g. string, hyperlink) and that no unnecessary data is sent (i.e. IDs and such).
@@ -128,6 +130,19 @@ order stated above.
 
 Edit 2: it was a bit confusing, but I made it. I had to save the user and its related objects directly in the view, as
 using the user serializer was too confusing. Sadly, I wasted too much time on it.
+
+Now, on to the user update controller. This one should be straightforward, as I plan to reuse much of the code from the
+creation controller. I think I'll opt to do that instead of adding addition/removal endpoints for languages and
+interests. Simply fetch the user and run the same operations as in user creation.
+
+Actually, forget about that. It's definitely better to do it the other way. It will need several controllers more, but
+they will be much simpler than what I just said.
+
+`04/03/2022`
+
+I'm going to try adding those controllers now. By making them separate, the user may be able to update their profile
+through separate API calls, using different fields (instead of a large form for all fields). Besides, updating your
+profile is not something you do constantly, so this shouldn't cause any server overhead.  
 
 `07/03/2022`
 

@@ -16,6 +16,10 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
+
+    class Meta:
+        model = get_user_model()
+
     queryset = get_user_model().objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
 
@@ -57,7 +61,7 @@ class UserViewSet(viewsets.ModelViewSet):
         Creates an user and its associated language and interest objects
         """
         data = request.data
-        user_object = get_user_model().objects.create_user(
+        user_object = self.Meta.model.objects.create_user(
             username=data["username"],
             email=data["email"],
             password=data["password"],
@@ -235,9 +239,6 @@ class UserViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
-
-    class Meta:
-        model = get_user_model()
 
 
 class GroupViewSet(viewsets.ModelViewSet):
