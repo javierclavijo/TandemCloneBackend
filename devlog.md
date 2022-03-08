@@ -166,9 +166,6 @@ And actually, I think I'm going to join the user partial update controllers into
 written so far for those endpoints feels like a workaround. I probably should write a serializer exclusively for
 updating the user's password and make a single view for that.
 
-[//]: # (TODO: ask mr. Ortega what to do with interest fields --whether I should make them JSONFields)
-model serializer's data.
-
 `08/03/2022`
 
 I made the update controller for the user interests yesterday. I'm still not completely satisfied with how I'm handling
@@ -177,3 +174,8 @@ too much time. At the very least, I'm going to change the field to be a CharFiel
 
 As I said, next up I'm going to make tests for the user CRUD controllers, then I will make the channel CRUD and the
 tests for that.
+
+Edit: I changed the interest fields without much trouble.
+
+[//]: # (TODO: ask mr. Ortega what to do with interest fields --whether I should make them JSONFields)
+[//]: # (Question 2: error status code or status 200 with error message?)
