@@ -177,5 +177,8 @@ tests for that.
 
 Edit: I changed the interest fields without much trouble.
 
-[//]: # (TODO: ask mr. Ortega what to do with interest fields --whether I should make them JSONFields)
-[//]: # (Question 2: error status code or status 200 with error message?)
+Questions:
+
+1. What to do with interest fields --whether I should make them JSONFields
+2. Error status code or status 200 with error message?
+3. Any additional tests that are particularly helpful?

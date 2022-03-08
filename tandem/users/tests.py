@@ -1,7 +1,14 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.reverse import reverse
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient, APITestCase, APIRequestFactory, force_authenticate
+
+# TODO: additional user test cases:
+# Update/change password/etc. can only be performed by the same user or by an admin
+# Failure cases with incorrect data
+
+from users.serializers import UserSerializer
+from users.views import UserViewSet
 
 
 class UserCrudTests(APITestCase):
@@ -29,6 +36,7 @@ class UserCrudTests(APITestCase):
         """
         url = reverse('customuser-list')
         response = self.client.get(url)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], self.user_model.objects.count())
 
@@ -40,6 +48,7 @@ class UserCrudTests(APITestCase):
         url = reverse("customuser-detail", kwargs={'pk': 2})
         response = self.client.get(url)
         user_object = self.user_model.objects.get(pk=user_id)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], user_object.id)
         self.assertNotContains(response, 'password')
@@ -70,5 +79,125 @@ class UserCrudTests(APITestCase):
         url = reverse("customuser-list")
         response = self.client.post(url, data=new_user, format='json')
         user_object = self.user_model.objects.get(pk=response.data['id'])
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['username'], user_object.username)
+
+    def test_user_partial_update_successful(self):
+        """
+        Tests whether user partial update succeeds with username, email and description.
+        """
+        data = {
+            "username": "test_user_new_name",
+            "email": "test_user_new_email@example.com",
+            "description": 'new description'
+        }
+        user_id = 2
+        url = reverse("customuser-detail", kwargs={'pk': user_id})
+        response = self.client.patch(url, data=data, format='json')
+        user_object = self.user_model.objects.get(pk=user_id)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(user_object.username, data['username'])
+        self.assertEqual(user_object.email, data['email'])
+        self.assertEqual(user_object.description, data['description'])
+
+    def test_password_change_successful(self):
+        """
+        Checks whether password change is successful.
+        """
+        data = {"password": "new_password"}
+        user_id = 2
+        url = reverse("customuser-set-password", kwargs={'pk': user_id})
+        response = self.client.patch(url, data=data, format='json')
+        user_object = self.user_model.objects.get(pk=user_id)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(self.client.login(username=user_object.username, password=data['password']))
+
+    def test_set_friends_successful(self):
+        """
+        Checks whether friend list update is successful.
+        """
+        friend_ids = [3, 5, 7, 13]
+        data = {"friends": []}
+        user_id = 2
+
+        for friend_id in friend_ids:
+            friend_url = reverse("customuser-detail", kwargs={"pk": friend_id})
+            data['friends'].append(friend_url)
+
+        # We need to use a request factory to pass the request to the serializer
+        factory = APIRequestFactory()
+        url = reverse("customuser-set-friends", kwargs={"pk": user_id})
+        view = UserViewSet.as_view({'patch': 'set_friends'})
+        request = factory.patch(url, data=data, format="json")
+        force_authenticate(request, user=self.user)
+        response = view(request=request, pk=user_id)
+
+        serializer = UserSerializer(
+            instance=self.user_model.objects.get(pk=user_id),
+            context={'request': request}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['friends'], serializer.data['friends'])
+
+    def test_set_languages_successful(self):
+        """
+        Checks whether language list update is successful.
+        """
+        data = {
+            "languages": [
+                {
+                    "language": "EN",
+                    "level": "N"
+                },
+                {
+                    "language": "FR",
+                    "level": "A2"
+                },
+                {
+                    "language": "DE",
+                    "level": "B1"
+                }
+            ]
+        }
+        user_id = 2
+
+        factory = APIRequestFactory()
+        url = reverse("customuser-set-languages", kwargs={"pk": user_id})
+        view = UserViewSet.as_view({'patch': 'set_languages'})
+        request = factory.patch(url, data=data, format="json")
+        force_authenticate(request, user=self.user)
+        response = view(request=request, pk=user_id)
+
+        serializer = UserSerializer(
+            instance=self.user_model.objects.get(pk=user_id),
+            context={'request': request}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(response.data['languages'], serializer.data['languages'])
+
+    def test_set_interests_successful(self):
+        """
+        Checks whether interest list update is successful.
+        """
+        data = {"interests": ["Sports", "Cinema", "Music"]}
+        user_id = 2
+
+        factory = APIRequestFactory()
+        url = reverse("customuser-set-interests", kwargs={"pk": user_id})
+        view = UserViewSet.as_view({'patch': 'set_interests'})
+        request = factory.patch(url, data=data, format="json")
+        force_authenticate(request, user=self.user)
+        response = view(request=request, pk=user_id)
+
+        serializer = UserSerializer(
+            instance=self.user_model.objects.get(pk=user_id),
+            context={'request': request}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEquals(response.data['interests'], serializer.data['interests'])
