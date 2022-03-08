@@ -15,7 +15,7 @@ from users.serializers import UserSerializer, GroupSerializer, UserChatMessageSe
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    API endpoints that allow users to be viewed or edited.
     """
 
     class Meta:
@@ -23,6 +23,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = get_user_model().objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
+
+    # Disable PUT method, as it's not currently supported due to nested serializer fields
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head']
 
     def get_permissions(self):
         """

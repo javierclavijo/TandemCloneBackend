@@ -84,11 +84,13 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
         - [ ] Delete message
 - Channel:
     - CRUD:
-        - [ ] Create channel
-        - [ ] Update channel
+        - [x] Create channel
+        - [x] Update channel
         - [ ] Add user to channel
         - [ ] Remove user from channel
         - [ ] Update user's role
+        - [ ] Set channel interests
+        - [ ] Channel list (filter by language/level)
     - Chat:
         - [ ] Send message
         - [ ] Edit message
@@ -168,6 +170,14 @@ updating the user's password and make a single view for that.
 
 `08/03/2022`
 
+Questions:
+
+2. Error status code or status 200 with error message?
+    1. Use HTTP codes and document the API --users don't really have any need for error messages.
+3. Any additional tests that are particularly helpful
+    1. Error tests: if there's code for error handling, write tests.
+    2. Check test coverage
+
 I made the update controller for the user interests yesterday. I'm still not completely satisfied with how I'm handling
 interests --in fact, yesterday I tried to make interests a JSON field, but in the end I ruled it out due to it consuming
 too much time. At the very least, I'm going to change the field to be a CharField --I don't like it being an int field.
@@ -177,8 +187,17 @@ tests for that.
 
 Edit: I changed the interest fields without much trouble.
 
-Questions:
+Edit 2: I've added the first batch of tests for the user CRUD. There's one for each controller, and all of them are for
+success cases. I'll add more in the future, but I must research a bit first to find out what tests could be useful, and
+right now it doesn't seem too productive. I'll write the channels CRUD.
 
-1. What to do with interest fields --whether I should make them JSONFields
-2. Error status code or status 200 with error message?
-3. Any additional tests that are particularly helpful?
+Edit 3: I've revised the channel endpoints before making them, and I think the endpoints will be simpler this time
+around. Create and update controllers are already made, so I shouldn't even make tests for them. So that leaves me with
+the membership controllers --add user, delete user, update user. Actually, now that I think of it, it sounds a lot
+easier to make a membership ViewSet and disable paths. It would go like this: 
+- Create: POST /membership
+- Update: PATCH /membership/pk
+- Delete: DELETE /membership/pk
+
+That means I should just add membership URLs to ChannelMembershipSerializer.
+
