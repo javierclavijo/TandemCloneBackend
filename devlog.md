@@ -167,3 +167,13 @@ written so far for those endpoints feels like a workaround. I probably should wr
 updating the user's password and make a single view for that.
 
 [//]: # (TODO: ask mr. Ortega what to do with interest fields --whether I should make them JSONFields)
+model serializer's data.
+
+`08/03/2022`
+
+I made the update controller for the user interests yesterday. I'm still not completely satisfied with how I'm handling
+interests --in fact, yesterday I tried to make interests a JSON field, but in the end I ruled it out due to it consuming
+too much time. At the very least, I'm going to change the field to be a CharField --I don't like it being an int field.
+
+As I said, next up I'm going to make tests for the user CRUD controllers, then I will make the channel CRUD and the
+tests for that.

@@ -48,8 +48,9 @@ class UserInterest(models.Model):
         on_delete=models.CASCADE,
         related_name='interests'
     )
-    interest = models.PositiveIntegerField(
-        choices=Interest.choices
+    interest = models.CharField(
+        choices=Interest.choices,
+        max_length=32
     )
 
     class Meta:

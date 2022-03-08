@@ -22,13 +22,13 @@ class ProficiencyLevel(models.TextChoices):
     NATIVE = 'N'
 
 
-class Interest(models.IntegerChoices):
+class Interest(models.TextChoices):
     # TODO: change this enum (and related classes) to TextChoices. Don't forget to update it in the Postman collection
-    SPORTS = 0, _('Sports')
-    MUSIC = 1, _('Music')
-    LITERATURE = 2, _('Literature')
-    CINEMA = 3, _('Cinema')
-    VIDEO_GAMES = 4, _('Video games')
+    SPORTS = _('Sports')
+    MUSIC = _('Music')
+    LITERATURE = _('Literature')
+    CINEMA = _('Cinema')
+    VIDEO_GAMES = _('Video games')
 
 
 class AbstractChatMessage(models.Model):
