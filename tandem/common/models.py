@@ -23,7 +23,6 @@ class ProficiencyLevel(models.TextChoices):
 
 
 class Interest(models.TextChoices):
-    # TODO: change this enum (and related classes) to TextChoices. Don't forget to update it in the Postman collection
     SPORTS = _('Sports')
     MUSIC = _('Music')
     LITERATURE = _('Literature')

@@ -90,8 +90,8 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
         - [x] Add user to channel (POST /memberships/)
         - [x] Remove user from channel (DELETE /memberships/<pk>/)
         - [x] Update user's role (PATCH /memberships/<pk>/)
-        - [ ] Set channel interests
-        - [ ] Channel list (filter by language/level/interests)
+        - [x] Set channel interests
+        - [x] Channel list (filter by language/level/interests)
     - Chat:
         - [ ] Send message
         - [ ] Edit message
