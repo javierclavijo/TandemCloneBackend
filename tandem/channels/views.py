@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from channels.models import Channel, Membership
-from channels.serializers import ChannelSerializer, ChannelChatMessageSerializer, ChannelMembershipSerializer
+from channels.serializers import ChannelSerializer, ChannelChatMessageSerializer, ChannelMembershipSerializer, \
+    MembershipSerializer
 
 
 class ChannelViewSet(viewsets.ModelViewSet):
@@ -42,7 +43,4 @@ class MembershipViewSet(viewsets.ModelViewSet):
         model = Membership
 
     queryset = Membership.objects.all()
-    serializer_class = ChannelMembershipSerializer
-
-    # Disable unused views
-    # http_method_names = ['get', 'post', 'patch', 'delete', 'head']
+    serializer_class = MembershipSerializer

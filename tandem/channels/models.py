@@ -37,12 +37,13 @@ class Channel(models.Model):
         ]
 
 
-class Membership(models.Model):
-    class ChannelRole(models.TextChoices):
-        USER = 'U', _('User')
-        MOD = 'M', _('Moderator')
-        ADMIN = 'A', _('Administrator')
+class ChannelRole(models.TextChoices):
+    USER = 'U', _('User')
+    MOD = 'M', _('Moderator')
+    ADMIN = 'A', _('Administrator')
 
+
+class Membership(models.Model):
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

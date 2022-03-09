@@ -72,23 +72,23 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
 
 - User:
     - CRUD:
-        - [x] User creation
-        - [x] Change username, email and description (partial_update)
-        - [x] Change password
-        - [x] Update friends (list)
-        - [x] Update languages (list)
-        - [ ] Update interests (list)
+        - [x] User creation (POST /users/)
+        - [x] Change username, email and description (PATCH /user/<pk>/)
+        - [x] Change password (PATCH /users/<pk>/set_password/)
+        - [x] Update friends list (PATCH /users/<pk>/set_friends/)
+        - [x] Update languages list (PATCH /users/<pk>/set_languages/)
+        - [ ] Update interests lists (PATCH /users/<pk>/set_interests/)
     - Chat:
         - [ ] Send message
         - [ ] Edit message
         - [ ] Delete message
 - Channel:
     - CRUD:
-        - [x] Create channel
-        - [x] Update channel
-        - [ ] Add user to channel
-        - [ ] Remove user from channel
-        - [ ] Update user's role
+        - [x] Create channel (POST /channels/)
+        - [x] Update channel (PATCH /channels/<pk>/)
+        - [ ] Add user to channel (POST /memberships/)
+        - [ ] Remove user from channel (DELETE /memberships/<pk>/)
+        - [ ] Update user's role (PATCH /memberships/<pk>/)
         - [ ] Set channel interests
         - [ ] Channel list (filter by language/level)
     - Chat:
@@ -194,10 +194,15 @@ right now it doesn't seem too productive. I'll write the channels CRUD.
 Edit 3: I've revised the channel endpoints before making them, and I think the endpoints will be simpler this time
 around. Create and update controllers are already made, so I shouldn't even make tests for them. So that leaves me with
 the membership controllers --add user, delete user, update user. Actually, now that I think of it, it sounds a lot
-easier to make a membership ViewSet and disable paths. It would go like this: 
+easier to make a membership ViewSet and disable paths. It would go like this:
+
 - Create: POST /membership
 - Update: PATCH /membership/pk
 - Delete: DELETE /membership/pk
 
 That means I should just add membership URLs to ChannelMembershipSerializer.
 
+`09/03/2022`
+
+Yesterday I started implementing the channel membership controllers, although I was unable to actually get them to work
+--not that there's any problem, just that I didn't have the time. I'll try to 
