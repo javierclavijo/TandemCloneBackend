@@ -4,12 +4,15 @@ from django.contrib.auth.models import Group
 from rest_framework import serializers
 
 from channels.models import Membership
+from channels.serializers import MembershipSerializer
 from users.models import UserLanguage, UserInterest, UserChatMessage
 
 
 class UserLanguageSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
-        """Exclude id and user attributes from the object's serialization"""
+        """
+        Exclude id and user attributes from the object's serialization.
+        """
         ret = super(UserLanguageSerializer, self).to_representation(instance)
         del ret['id']
         del ret['user']
@@ -27,7 +30,9 @@ class UserLanguageSerializer(serializers.ModelSerializer):
 
 class UserInterestSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
-        """Return the interest's display name as the instance's representation"""
+        """
+        Return the interest's display name as the instance's representation.
+        """
         ret = super(UserInterestSerializer, self).to_representation(instance)
         return ret['interest_display']
 
@@ -42,23 +47,26 @@ class UserInterestSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserMembershipSerializer(serializers.ModelSerializer):
-    """Membership serializer to use in user serializer. Similar to ChannelMembershipSerializer, but includes the
-    channel's ID instead of the user's. """
-    role = serializers.CharField(source='get_role_display')
-    channel = serializers.HyperlinkedRelatedField(view_name="channel-detail", read_only=True)
+class UserMembershipSerializer(MembershipSerializer):
+    """
+    Membership serializer to use in user serializer, for representational purposes. Excludes user field from
+    representation.
+    """
 
     class Meta:
         model = Membership
         fields = [
+            'url',
             'channel',
             'role'
         ]
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-    """User serializer class. Does not include messages and other models, nor the user's password. Related fields are
-    set to be read only to avoid unwanted updates, as they should be done through custom controllers (views). """
+    """
+    User serializer class. Does not include messages and other models, nor the user's password. Related fields are
+    set to be read only to avoid unwanted updates, as they should be done through custom controllers (views).
+    """
     languages = UserLanguageSerializer(many=True, read_only=True)
     interests = UserInterestSerializer(many=True, required=False, read_only=True)
     memberships = UserMembershipSerializer(many=True, read_only=True)
@@ -80,7 +88,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class UserPasswordUpdateSerializer(UserSerializer):
-    """Serializer to update user's password."""
+    """
+    Serializer to update user's password.
+    """
 
     def to_representation(self, instance):
         ret = super(UserPasswordUpdateSerializer, self).to_representation(instance)

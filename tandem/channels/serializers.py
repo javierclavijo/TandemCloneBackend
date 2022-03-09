@@ -37,16 +37,11 @@ class MembershipSerializer(serializers.ModelSerializer):
         ]
 
 
-class ChannelMembershipSerializer(serializers.ModelSerializer):
+class ChannelMembershipSerializer(MembershipSerializer):
     """
-    Membership serializer to use in channel serializer. Similar to UserMembershipSerializer, but includes the
-    user's ID instead of the channel's. Also includes the Membership object's url to perform update and delete
-    operations.
+    Membership serializer to use in channel serializer, for representational purposes. Excludes channel field from
+    representation.
     """
-    # TODO: perhaps, refactor this and UserMembershipSerializer to inherit from MemberSerializer (hiding fields as
-    #  required)
-    role = serializers.CharField(source='get_role_display')
-    user = serializers.HyperlinkedRelatedField(view_name="customuser-detail", read_only=True)
 
     class Meta:
         model = Membership

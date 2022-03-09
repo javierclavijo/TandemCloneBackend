@@ -86,9 +86,9 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
     - CRUD:
         - [x] Create channel (POST /channels/)
         - [x] Update channel (PATCH /channels/<pk>/)
-        - [ ] Add user to channel (POST /memberships/)
-        - [ ] Remove user from channel (DELETE /memberships/<pk>/)
-        - [ ] Update user's role (PATCH /memberships/<pk>/)
+        - [x] Add user to channel (POST /memberships/)
+        - [x] Remove user from channel (DELETE /memberships/<pk>/)
+        - [x] Update user's role (PATCH /memberships/<pk>/)
         - [ ] Set channel interests
         - [ ] Channel list (filter by language/level)
     - Chat:
@@ -205,4 +205,7 @@ That means I should just add membership URLs to ChannelMembershipSerializer.
 `09/03/2022`
 
 Yesterday I started implementing the channel membership controllers, although I was unable to actually get them to work
---not that there's any problem, just that I didn't have the time. I'll try to 
+--not that there's any problem, just that I didn't have the time.
+
+Edit: I was able to fix it without too much effort. I've also refactored ChannelMembershipSerializer and
+UserMembershipSerializer to inherit from MemberSerializer, only changing representation.
