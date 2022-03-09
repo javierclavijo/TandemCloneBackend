@@ -77,7 +77,8 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
         - [x] Change password (PATCH /users/<pk>/set_password/)
         - [x] Update friends list (PATCH /users/<pk>/set_friends/)
         - [x] Update languages list (PATCH /users/<pk>/set_languages/)
-        - [ ] Update interests lists (PATCH /users/<pk>/set_interests/)
+        - [x] Update interests lists (PATCH /users/<pk>/set_interests/)
+        - [ ] User list (filter by language/level/interests)
     - Chat:
         - [ ] Send message
         - [ ] Edit message
@@ -90,7 +91,7 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
         - [x] Remove user from channel (DELETE /memberships/<pk>/)
         - [x] Update user's role (PATCH /memberships/<pk>/)
         - [ ] Set channel interests
-        - [ ] Channel list (filter by language/level)
+        - [ ] Channel list (filter by language/level/interests)
     - Chat:
         - [ ] Send message
         - [ ] Edit message
@@ -209,3 +210,12 @@ Yesterday I started implementing the channel membership controllers, although I 
 
 Edit: I was able to fix it without too much effort. I've also refactored ChannelMembershipSerializer and
 UserMembershipSerializer to inherit from MemberSerializer, only changing representation.
+
+Now there's only three CRUD endpoints left: set channel interests, which should work copy-pasting from UserViewSet (with
+some changes, of course), and the channel and user list views with filters for languages, levels and interests. Then I
+should make tests for those, as they need custom code. I'll write those up next.
+
+I've also just added the coverage library as a dependency, to check test coverage for the controllers I've made. The
+tests I've made so far give a result of 92% coverage, which is pretty good --most issues are from user views, as I
+haven't written test cases for exception handling yet. I'll write those after the remaining controllers, followed by the
+channel custom controller tests.
