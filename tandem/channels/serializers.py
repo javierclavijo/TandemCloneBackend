@@ -55,18 +55,19 @@ class ChannelMembershipSerializer(MembershipSerializer):
 class ChannelInterestSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """
-        Return the interest's display name as the instance's representation
+        Return the interest's display name as the instance's representation.
         """
         ret = super(ChannelInterestSerializer, self).to_representation(instance)
-        return ret['interest_display']
+        return ret['display_name']
 
-    interest_display = serializers.CharField(source='get_interest_display')
+    display_name = serializers.CharField(source='get_interest_display', read_only=True)
 
     class Meta:
         model = ChannelInterest
         fields = [
+            'channel',
             'interest',
-            'interest_display'
+            'display_name'
         ]
 
 

@@ -34,16 +34,16 @@ class UserInterestSerializer(serializers.ModelSerializer):
         Return the interest's display name as the instance's representation.
         """
         ret = super(UserInterestSerializer, self).to_representation(instance)
-        return ret['interest_display']
+        return ret['display_name']
 
-    interest_display = serializers.CharField(source='get_interest_display', read_only=True)
+    display_name = serializers.CharField(source='get_interest_display', read_only=True)
 
     class Meta:
         model = UserInterest
         fields = [
             'user',
             'interest',
-            'interest_display'
+            'display_name'
         ]
 
 
