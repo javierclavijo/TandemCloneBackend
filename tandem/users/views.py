@@ -38,6 +38,51 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in permission_classes]
 
+    def get_queryset(self):
+        """
+        Optionally restricts the returned users, by filtering against `username`, `nativeLanguage`,
+        `foreignLanguage`, `levels` and `interests` query parameters in the URL.
+        """
+        user_model = self.Meta.model
+        queryset = user_model.objects.all()
+        username = self.request.query_params.get('username')
+        native_language = self.request.query_params.get('nativeLanguage')
+        foreign_language = self.request.query_params.get('foreignLanguage')
+        levels = self.request.query_params.get('levels')
+        interests = self.request.query_params.get('interests')
+
+        if username is not None:
+            queryset = queryset.filter(username__contains=username)
+
+        if native_language is not None:
+            queryset = queryset.filter(
+                languages__language=native_language,
+                languages__level=ProficiencyLevel.NATIVE
+            )
+
+        if foreign_language is not None:
+            # Users are filtered by means of a subquery which finds all UserLanguage objects where language matches the
+            # specified language and level is not Native ('N').
+
+            # First, create the base subquery.
+            subquery = UserLanguage.objects.filter(language=foreign_language)
+
+            if levels is not None:
+                # If proficiency levels are specified, add filtering by level. The 'levels' query parameter is not
+                # checked if the 'foreignLanguage' parameter is not specified, as there is no such use case.
+                levels_parts = levels.split(',')
+                subquery = subquery.filter(level__in=levels_parts)
+
+            # Exclude entries with native level from subquery, then filter the main queryset to include only the
+            # users referenced in the subquery's entries.
+            subquery = subquery.exclude(level=ProficiencyLevel.NATIVE)
+            queryset = queryset.filter(pk__in=subquery.values_list('user', flat=True))
+
+        if interests is not None:
+            queryset = queryset.filter(interests__interest__in=interests.split(','))
+
+        return queryset
+
     @action(
         url_path=r'chat/(?P<other_user>[0-9]+)',
         url_name='chat',

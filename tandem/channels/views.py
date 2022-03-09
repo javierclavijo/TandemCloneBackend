@@ -23,7 +23,8 @@ class ChannelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Optionally restricts the returned channels, by filtering against `name`, `language`, `levels` and `interests` query parameters in the URL.
+        Optionally restricts the returned channels, by filtering against `name`, `language`, `levels` and `interests`
+        query parameters in the URL.
         """
         queryset = Channel.objects.all()
         name = self.request.query_params.get('name')

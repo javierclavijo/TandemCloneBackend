@@ -78,7 +78,7 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
         - [x] Update friends list (PATCH /users/<pk>/set_friends/)
         - [x] Update languages list (PATCH /users/<pk>/set_languages/)
         - [x] Update interests lists (PATCH /users/<pk>/set_interests/)
-        - [ ] User list (filter by language/level/interests)
+        - [x] User list (filter by language/level/interests)
     - Chat:
         - [ ] Send message
         - [ ] Edit message
@@ -219,3 +219,21 @@ I've also just added the coverage library as a dependency, to check test coverag
 tests I've made so far give a result of 92% coverage, which is pretty good --most issues are from user views, as I
 haven't written test cases for exception handling yet. I'll write those after the remaining controllers, followed by the
 channel custom controller tests.
+
+Edit 2: I'm leaving it for the moment. I'm a bit stuck with the user list query filtering --specifically with the
+foreign language parameter. I have to return users which have a related UserLanguage object where the language is the
+specified foreign language and the level is not native. So far I have thought about exists clauses and queryset objects,
+but I haven't found any way to do what I want to do in Django. I'll come back to it later. If nothing works, there's
+always the option to use raw SQL, although I'd prefer to avoid it.
+
+Edit 3: Well, it was hard, but I made it. I used a subquery, which I have already done in other places. My main
+complaint here is that the way the Query (Q) objects work is not really transparent. The way I tried it in the first
+place *should* have worked, apparently:
+`queryset = queryset.filter(languages__language=foreign_language).exclude(Q(languages__language=foreign_language, languages__level=ProficiencyLevel.NATIVE))`
+That means we'd filter users to include all that had the specified foreign language as a language (UserLanguageObject),
+then filter to exclude those entries whose related object had 'native' as their level. But what it actually did was
+exclude all users who had a native language (that is, all users). I also tried using an EXISTS clause, but there seems
+to be no way of specifying it as a filtering condition. Indeed, Django's ORM lets you do pretty much everything, but
+when the data model gets a bit complex you may need to resort to less-than-obvious solutions.
+
+After this rant, I'd like to write tests as I said before.
