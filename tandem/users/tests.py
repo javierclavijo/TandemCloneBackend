@@ -115,6 +115,17 @@ class UserCrudTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(self.client.login(username=user_object.username, password=data['password']))
 
+    def test_password_change_fails_if_password_not_specified(self):
+        """
+        Checks whether password change fails and returns the appropriate error code if no 'password' key was
+        specified in the request.
+        """
+        data = {"test": "new_password"}
+        user_id = 2
+        url = reverse("customuser-set-password", kwargs={'pk': user_id})
+        response = self.client.patch(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_set_friends_successful(self):
         """
         Checks whether friend list update is successful.
@@ -142,6 +153,16 @@ class UserCrudTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['friends'], serializer.data['friends'])
+
+    def test_set_friends_fails_if_no_friends_are_sent(self):
+        """
+        Checks whether friend list update fails and returns the appropriate status code if no 'friends' key is
+        included in the request.
+        """
+        data = {"invalid_key": []}
+        url = reverse("customuser-set-friends", kwargs={"pk": 2})
+        response = self.client.patch(url, data=data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_set_languages_successful(self):
         """
@@ -178,7 +199,44 @@ class UserCrudTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEquals(response.data['languages'], serializer.data['languages'])
+        self.assertEqual(response.data['languages'], serializer.data['languages'])
+
+    def test_set_languages_fails_if_no_language_key(self):
+        """
+        Checks that language list update fails and returns the appropriate error code if no 'languages' key was sent
+        in the request's body.
+        """
+        data = {}
+        user_id = 2
+        url = reverse("customuser-set-languages", kwargs={"pk": user_id})
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_set_languages_fails_if_language_name_not_specified(self):
+        """
+        Tests that language list update fails and returns the appropriate error code if the format of the 'languages'
+        value is incorrect (has no 'language' key).
+        """
+        data = {"languages": [{
+            "level": "A2"
+        }]}
+        user_id = 2
+        url = reverse("customuser-set-languages", kwargs={"pk": user_id})
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_set_languages_fails_if_language_level_not_specified(self):
+        """
+        Tests that language list update fails and returns the appropriate error code if the format of the 'languages'
+        value is incorrect (has no 'level' key).
+        """
+        data = {"languages": [{
+            "language": "ES"
+        }]}
+        user_id = 2
+        url = reverse("customuser-set-languages", kwargs={"pk": user_id})
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_set_interests_successful(self):
         """
@@ -200,4 +258,24 @@ class UserCrudTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEquals(response.data['interests'], serializer.data['interests'])
+        self.assertEqual(response.data['interests'], serializer.data['interests'])
+
+    def test_set_interests_fails_if_no_interests_are_sent(self):
+        """
+        Checks whether interest list update fails when no interests are sent in the request's body ('interests') key.
+        """
+        data = {"invalid_key": []}
+        user_id = 2
+        url = reverse("customuser-set-interests", kwargs={"pk": user_id})
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_set_interests_fails_if_invalid_interests_are_sent(self):
+        """
+        Checks whether interest list update fails when invalid interests are sent in the request's body.
+        """
+        data = {"interests": ["Sports", "Smoking"]}
+        user_id = 2
+        url = reverse("customuser-set-interests", kwargs={"pk": user_id})
+        response = self.client.patch(url, data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)

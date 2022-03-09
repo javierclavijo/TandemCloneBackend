@@ -267,7 +267,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 interest_choices[interest]
             except KeyError:
                 # If any interest is not a valid interest, return 400 status code
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
             # First, find the object for the interest if there's already one for this user. This way, integrity errors
             # are avoided.

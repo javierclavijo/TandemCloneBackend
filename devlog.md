@@ -237,3 +237,23 @@ to be no way of specifying it as a filtering condition. Indeed, Django's ORM let
 when the data model gets a bit complex you may need to resort to less-than-obvious solutions.
 
 After this rant, I'd like to write tests as I said before.
+
+Edit 4: while writing the tests, I've realised that the way I'm handling friends and channel memberships is too naive.
+When I finish writing this batch of tests, I must implement requests for friendships, and probably channel membership.
+For friendships, I'll probably have to make the following:
+
+- Friendship table with two user PK attributes and a friendship_status attribute (request sent, request accepted,
+  request rejected blocked).
+- Friendship CRUD endpoints:
+    - Send request (create, POST /friends/)
+    - Accept request, reject request, block user (partial_update, PATCH /friends/<pk>)
+
+For channels, there's already the Membership model, so I could get away with adding extra statuses to the Role enum (
+request sent, request rejected, banned) and renaming it to something else (MembershipStatus). The trickier part would be
+handling permissions (e.g. only admins and moderators should be able to accept users into the channel). As with the user
+friendship requests, there should be no need to make custom endpoints. What I *should* add is a 'public' attribute to
+the Channel model, so that some channels can be joined without the request process.
+
+So I'll get around to it tomorrow, after writing the remaining tests.
+
+[//]: # (TODO: add friendship requests and channel status features.)
