@@ -3,9 +3,8 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory, force_authenticate
 
-# TODO: additional user test cases:
-# Update/change password/etc. can only be performed by the same user or by an admin
-# Failure cases with incorrect data
+from common.models import ProficiencyLevel
+from users.models import UserLanguage
 from users.serializers import UserSerializer
 from users.views import UserViewSet
 
@@ -19,11 +18,6 @@ class UserCrudTests(APITestCase):
 
     # Specify data fixtures to be loaded as initial data
     fixtures = ['test_data.json']
-
-    @classmethod
-    def setUpClass(cls):
-        super(UserCrudTests, cls).setUpClass()
-        cls.client.force_authenticate(user=cls.user)
 
     def setUp(self):
         super(UserCrudTests, self).setUp()
@@ -60,28 +54,73 @@ class UserCrudTests(APITestCase):
         user_count = self.user_model.objects.filter(username__icontains=params['username']).count()
         self.assertEqual(response.data['count'], user_count)
 
-    # def test_queryset_filter_by_native_language_has_correct_list(self):
-    #     """
-    #     Tests if the queryset returned by the user list endpoint contains the correct users when filtering by native
-    #     language.
-    #     """
-    #     url = reverse('customuser-list')
-    #     params = {"nativeLanguage": "DE"}
-    #     response = self.client.get(url, data=params)
-    #
-    #     # Compare sorted lists of IDs
-    #     # The endpoint returns paginated data, so we must specify a limit to the queryset
-    #     users_ids = list(self.user_model.objects.filter(languages__language=params['nativeLanguage'],
-    #                                                     languages__level=ProficiencyLevel.NATIVE)
-    #                      .order_by('id')
-    #                      .values_list('id', flat=True)[:10])
-    #     response_ids = sorted([user['id'] for user in response.data['results']])
-    #     self.assertEqual(response_ids, users_ids)
-    #
-    #     # Additionally, check that the count of found objects is correct
-    #     user_count = self.user_model.objects.filter(languages__language=params['nativeLanguage'],
-    #                                                 languages__level=ProficiencyLevel.NATIVE).count()
-    #     self.assertEqual(response.data['count'], user_count)
+    def test_queryset_filter_by_native_language_has_correct_list(self):
+        """
+        Tests if the queryset returned by the user list endpoint contains the correct users when filtering by native
+        language.
+        """
+        url = reverse('customuser-list')
+        params = {"nativeLanguage": "DE"}
+        response = self.client.get(url, data=params)
+
+        # Compare sorted lists of IDs
+        # The endpoint returns paginated data, so we must specify a limit to the queryset
+        users_ids = list(self.user_model.objects.filter(languages__language=params['nativeLanguage'],
+                                                        languages__level=ProficiencyLevel.NATIVE)
+                         .order_by('id')
+                         .values_list('id', flat=True)[:10])
+        response_ids = sorted([user['id'] for user in response.data['results']])
+        self.assertEqual(response_ids, users_ids)
+
+        # Additionally, check that the count of found objects is correct
+        user_count = self.user_model.objects.filter(languages__language=params['nativeLanguage'],
+                                                    languages__level=ProficiencyLevel.NATIVE).count()
+        self.assertEqual(response.data['count'], user_count)
+
+    def test_queryset_filter_by_foreign_language_and_levels_has_correct_list(self):
+        """
+        Tests if the queryset returned by the user list endpoint contains the correct users when filtering by foreign
+        language and levels.
+        """
+        url = reverse('customuser-list')
+        params = {"foreignLanguage": "IT", "levels": "B2,C1"}
+        response = self.client.get(url, data=params)
+
+        # Compare sorted lists of IDs
+        # The endpoint returns paginated data, so we must specify a limit to the queryset
+        levels_parts = params['levels'].split(',')
+        subquery = UserLanguage.objects.filter(language=params['foreignLanguage'], level__in=levels_parts) \
+            .exclude(level=ProficiencyLevel.NATIVE)
+        users_ids = list(self.user_model.objects.filter(pk__in=subquery.values_list('user', flat=True))
+                         .order_by('id')
+                         .values_list('id', flat=True)[:10])
+
+        response_ids = sorted([user['id'] for user in response.data['results']])
+        self.assertEqual(response_ids, users_ids)
+
+        # Additionally, check that the count of found objects is correct
+        user_count = self.user_model.objects.filter(pk__in=subquery.values_list('user', flat=True)).count()
+        self.assertEqual(response.data['count'], user_count)
+
+    def test_queryset_filter_by_interests_has_correct_list(self):
+        """
+        Tests if the queryset returned by the user list endpoint contains the correct users when filtering by interests.
+        """
+        url = reverse('customuser-list')
+        params = {"interests": "Music"}
+        response = self.client.get(url, data=params)
+
+        # Compare sorted lists of IDs
+        # The endpoint returns paginated data, so we must specify a limit to the queryset
+        users_ids = list(self.user_model.objects.filter(interests__interest=params['interests'])
+                         .order_by('id')
+                         .values_list('id', flat=True)[:10])
+        response_ids = sorted([user['id'] for user in response.data['results']])
+        self.assertEqual(response_ids, users_ids)
+
+        # Additionally, check that the count of found objects is correct
+        user_count = self.user_model.objects.filter(interests__interest=params['interests']).count()
+        self.assertEqual(response.data['count'], user_count)
 
     def test_user_detail_has_id_and_has_not_password(self):
         """
@@ -308,7 +347,7 @@ class UserCrudTests(APITestCase):
 
     def test_set_interests_fails_if_no_interests_are_sent(self):
         """
-        Checks whether interest list update fails when no interests are sent in the request's body ('interests') key.
+        Checks whether interest list update fails when no interests are sent in the request's body ('interests' key).
         """
         data = {"invalid_key": []}
         user_id = 2
@@ -320,7 +359,7 @@ class UserCrudTests(APITestCase):
         """
         Checks whether interest list update fails when invalid interests are sent in the request's body.
         """
-        data = {"interests": ["Sports", "Smoking"]}
+        data = {"interests": ["Sports", "a"]}
         user_id = 2
         url = reverse("customuser-set-interests", kwargs={"pk": user_id})
         response = self.client.patch(url, data=data, format="json")

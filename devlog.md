@@ -283,5 +283,5 @@ steps would be:
 
 [//]: # (TODO: create 'chats' app)
 
-Also, I think I'm going to create a field specifically for the user's native language. Filtering the languages related
-field is too much work, and there's no reason to not separate the user's native and foreign languages.
+Edit 1: I've finished tests for the user views, so I'll write tests for the channel CRUD views before making the changes
+I've mentioned.
