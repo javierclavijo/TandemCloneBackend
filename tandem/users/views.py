@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
 from rest_framework import permissions, status
@@ -9,7 +8,7 @@ from rest_framework.response import Response
 
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from users.models import UserChatMessage, UserLanguage, UserInterest
-from users.serializers import UserSerializer, GroupSerializer, UserChatMessageSerializer, UserLanguageSerializer, \
+from users.serializers import UserSerializer, UserChatMessageSerializer, UserLanguageSerializer, \
     UserPasswordUpdateSerializer, UserInterestSerializer
 
 
@@ -83,28 +82,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @action(
-        url_path=r'chat/(?P<other_user>[0-9]+)',
-        url_name='chat',
-        detail=True,
-        methods=['get']
-    )
-    def chat(self, request, other_user, *args, **kwargs):
-        """
-        Fetches an user's chat with another user.
-        """
-        user = self.get_object()
-        queryset = UserChatMessage.objects.filter(
-            Q(author=user, recipient_id=other_user) |
-            Q(author_id=other_user, recipient=user)
-        )
-        message_serializer = UserChatMessageSerializer(
-            queryset,
-            context={'request': self.request},
-            many=True
-        )
-        return Response(message_serializer.data)
-
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         """
@@ -136,10 +113,7 @@ class UserViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    @action(
-        detail=True,
-        methods=['patch']
-    )
+    @action(detail=True, methods=['patch'])
     def set_password(self, request, *args, **kwargs):
         """Update the user's password. Uses a custom serializer class."""
         instance = self.get_object()
@@ -185,10 +159,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(
-        detail=True,
-        methods=['patch']
-    )
+    @action(detail=True, methods=['patch'])
     @transaction.atomic()
     def set_languages(self, request, *args, **kwargs):
         """Update the user's language list. Must receive a list of dictionaries with key-value pairs for language and
@@ -210,16 +181,18 @@ class UserViewSet(viewsets.ModelViewSet):
             # First, find the object for the language if there's already one for this user. This way, integrity errors
             # are avoided.
             try:
-                # If an object is found, update it with the level set in the request
+                # If an object is found, check if its current level differs from the level sent in the request,
+                # then update it if that's the case. Either way, append it to the new language objects list.
                 language_object = instance.languages.get(language=language_name)
-                language_object.level = language_level
-                serializer = UserLanguageSerializer(
-                    instance=language_object,
-                    data=language,
-                    partial=True
-                )
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
+                if language_object.level != language_level:
+                    language_object.level = language_level
+                    serializer = UserLanguageSerializer(
+                        instance=language_object,
+                        data=language,
+                        partial=True
+                    )
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save()
                 new_language_objects.append(language_object)
 
             except UserLanguage.DoesNotExist:
@@ -247,10 +220,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(
-        detail=True,
-        methods=['patch']
-    )
+    @action(detail=True, methods=['patch'])
     @transaction.atomic()
     def set_interests(self, request, *args, **kwargs):
         """Update the user's interest list. Must receive a list of interest values (from the Interest enum)."""
@@ -299,14 +269,20 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    class Meta:
-        model = Group
+    @action(url_path=r'chat/(?P<other_user>[0-9]+)', url_name='chat',
+            detail=True, methods=['get'])
+    def chat(self, request, other_user, *args, **kwargs):
+        """
+        Fetches a user's chat with another user.
+        """
+        user = self.get_object()
+        queryset = UserChatMessage.objects.filter(
+            Q(author=user, recipient_id=other_user) |
+            Q(author_id=other_user, recipient=user)
+        )
+        message_serializer = UserChatMessageSerializer(
+            queryset,
+            context={'request': self.request},
+            many=True
+        )
+        return Response(message_serializer.data)

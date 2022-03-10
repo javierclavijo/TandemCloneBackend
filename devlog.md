@@ -79,6 +79,7 @@ create the endpoints for creating and updating resources. In fact, I'm going to 
         - [x] Update languages list (PATCH /users/<pk>/set_languages/)
         - [x] Update interests lists (PATCH /users/<pk>/set_interests/)
         - [x] User list (filter by language/level/interests)
+        - [ ] User chats list
     - Chat:
         - [ ] Send message
         - [ ] Edit message
@@ -257,3 +258,30 @@ the Channel model, so that some channels can be joined without the request proce
 So I'll get around to it tomorrow, after writing the remaining tests.
 
 [//]: # (TODO: add friendship requests and channel status features.)
+
+`10/03/2022`
+
+Okay let's go.
+
+Note: I have to add a controller to fetch the list of user chats. I've added it to the list of controllers. Speaking of
+which, I probably should rethink the way I'm handling the user and channel chats, too. It would be nice to have
+serializers for the chats and make ViewSets for them. The problem is that I don't have a chat model, although I could
+add it. Indeed, it seems to be the best option looking forward --it sounds unnecessary at face value, as I can fetch
+messages according to user IDs, but moving forward I think that it will provide me with more flexibility. There's no
+need to do that with channels, as the Channel model suffices --I'd only have to create a ChannelChatSerializer. So the
+steps would be:
+
+- Create a 'chats' app to differentiate chat functionality from CRUDs
+- Move messages & related models to said app
+- User chats:
+    - Create UserChat model (pk, users ManyToManyField)
+    - Add chat ForeignKey to UserMessage with 'messages' related_name
+    - Create UserChat serializer
+    - Create UserChatViewSet
+    - Create ChannelChat serializer
+    - Create MessageChatViewSet (with Channel as its model)
+
+[//]: # (TODO: create 'chats' app)
+
+Also, I think I'm going to create a field specifically for the user's native language. Filtering the languages related
+field is too much work, and there's no reason to not separate the user's native and foreign languages.

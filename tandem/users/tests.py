@@ -6,7 +6,6 @@ from rest_framework.test import APIClient, APITestCase, APIRequestFactory, force
 # TODO: additional user test cases:
 # Update/change password/etc. can only be performed by the same user or by an admin
 # Failure cases with incorrect data
-
 from users.serializers import UserSerializer
 from users.views import UserViewSet
 
@@ -32,13 +31,57 @@ class UserCrudTests(APITestCase):
 
     def test_user_list_has_correct_length(self):
         """
-        Tests if the user list endpoint's response returns the appropriate status code and contains all users (has the correct length).
+        Tests if the user list endpoint's response returns the appropriate status code and contains all users (has
+        the correct length).
         """
         url = reverse('customuser-list')
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], self.user_model.objects.count())
+
+    def test_queryset_filter_by_username_has_correct_list(self):
+        """
+        Tests if the queryset returned by the user list endpoint contains the correct users when filtering by username.
+        """
+        url = reverse('customuser-list')
+        params = {"username": "o"}
+        response = self.client.get(url, data=params)
+
+        # Compare sorted lists of IDs
+        # The endpoint returns paginated data, so we must specify a limit to the queryset
+        users_ids = list(self.user_model.objects.filter(username__icontains=params['username'])
+                         .order_by('id')
+                         .values_list('id', flat=True)[:10])
+        response_ids = sorted([user['id'] for user in response.data['results']])
+        self.assertEqual(response_ids, users_ids)
+
+        # Additionally, check that the count of found objects is correct
+        user_count = self.user_model.objects.filter(username__icontains=params['username']).count()
+        self.assertEqual(response.data['count'], user_count)
+
+    # def test_queryset_filter_by_native_language_has_correct_list(self):
+    #     """
+    #     Tests if the queryset returned by the user list endpoint contains the correct users when filtering by native
+    #     language.
+    #     """
+    #     url = reverse('customuser-list')
+    #     params = {"nativeLanguage": "DE"}
+    #     response = self.client.get(url, data=params)
+    #
+    #     # Compare sorted lists of IDs
+    #     # The endpoint returns paginated data, so we must specify a limit to the queryset
+    #     users_ids = list(self.user_model.objects.filter(languages__language=params['nativeLanguage'],
+    #                                                     languages__level=ProficiencyLevel.NATIVE)
+    #                      .order_by('id')
+    #                      .values_list('id', flat=True)[:10])
+    #     response_ids = sorted([user['id'] for user in response.data['results']])
+    #     self.assertEqual(response_ids, users_ids)
+    #
+    #     # Additionally, check that the count of found objects is correct
+    #     user_count = self.user_model.objects.filter(languages__language=params['nativeLanguage'],
+    #                                                 languages__level=ProficiencyLevel.NATIVE).count()
+    #     self.assertEqual(response.data['count'], user_count)
 
     def test_user_detail_has_id_and_has_not_password(self):
         """
@@ -53,7 +96,7 @@ class UserCrudTests(APITestCase):
         self.assertEqual(response.data['id'], user_object.id)
         self.assertNotContains(response, 'password')
 
-    def test_user_creation_successful(self):
+    def test_user_creation_succeeds_with_appropriate_data(self):
         """
         Tests whether user creation is successful with appropriate data.
         """
@@ -83,7 +126,7 @@ class UserCrudTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['username'], user_object.username)
 
-    def test_user_partial_update_successful(self):
+    def test_user_partial_update_succeeds_with_appropriate_data(self):
         """
         Tests whether user partial update succeeds with username, email and description.
         """
@@ -102,7 +145,7 @@ class UserCrudTests(APITestCase):
         self.assertEqual(user_object.email, data['email'])
         self.assertEqual(user_object.description, data['description'])
 
-    def test_password_change_successful(self):
+    def test_password_change_succeeds_with_appropriate_data(self):
         """
         Checks whether password change is successful.
         """
@@ -126,7 +169,7 @@ class UserCrudTests(APITestCase):
         response = self.client.patch(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_set_friends_successful(self):
+    def test_set_friends_succeeds_with_appropriate_data(self):
         """
         Checks whether friend list update is successful.
         """
@@ -164,24 +207,27 @@ class UserCrudTests(APITestCase):
         response = self.client.patch(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_set_languages_successful(self):
+    def test_set_languages_succeeds_with_appropriate_data(self):
         """
-        Checks whether language list update is successful.
+        Checks whether language list update is successful. Coverage for this test depends on the user's extant
+        language data and request data --ideally, the test's request should include at least a language the user
+        already has with the same level, one that the user also has but with a different level, and another one that
+        the user doesn't already have, as they are all treated differently in the view's code.
         """
         data = {
             "languages": [
                 {
-                    "language": "EN",
+                    "language": "ES",
                     "level": "N"
+                },
+                {
+                    "language": "IT",
+                    "level": "B2"
                 },
                 {
                     "language": "FR",
                     "level": "A2"
                 },
-                {
-                    "language": "DE",
-                    "level": "B1"
-                }
             ]
         }
         user_id = 2
@@ -238,7 +284,7 @@ class UserCrudTests(APITestCase):
         response = self.client.patch(url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_set_interests_successful(self):
+    def test_set_interests_succeeds_with_appropriate_data(self):
         """
         Checks whether interest list update is successful.
         """

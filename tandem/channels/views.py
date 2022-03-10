@@ -14,6 +14,10 @@ class ChannelViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
+
+    class Meta:
+        model = Channel
+
     queryset = Channel.objects.all()
     serializer_class = ChannelSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -54,22 +58,7 @@ class ChannelViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @action(detail=True, methods=['get'])
-    def chat(self, *args, **kwargs):
-        """
-        Fetches the channel's chat.
-        """
-        message_serializer = ChannelChatMessageSerializer(
-            self.get_object().messages.all(),
-            context={'request': self.request},
-            many=True
-        )
-        return Response(message_serializer.data)
-
-    @action(
-        detail=True,
-        methods=['patch']
-    )
+    @action(detail=True, methods=['patch'])
     @transaction.atomic()
     def set_interests(self, request, *args, **kwargs):
         """
@@ -121,8 +110,17 @@ class ChannelViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    class Meta:
-        model = Channel
+    @action(detail=True, methods=['get'])
+    def chat(self, *args, **kwargs):
+        """
+        Fetches the channel's chat.
+        """
+        message_serializer = ChannelChatMessageSerializer(
+            self.get_object().messages.all(),
+            context={'request': self.request},
+            many=True
+        )
+        return Response(message_serializer.data)
 
 
 class MembershipViewSet(viewsets.ModelViewSet):
