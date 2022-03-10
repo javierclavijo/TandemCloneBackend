@@ -272,10 +272,10 @@ need to do that with channels, as the Channel model suffices --I'd only have to 
 steps would be:
 
 - [x] Create a 'chats' app to differentiate chat functionality from CRUDs
-- [ ] Move messages & related models to said app
+- [x] Move messages & related models to said app
 - User chats:
-    - [ ] Create UserChat model (pk, users ManyToManyField)
-    - [ ] Add chat ForeignKey to UserMessage with 'messages' related_name
+    - [x] Create UserChat model (pk, users ManyToManyField)
+    - [x] Add chat ForeignKey to UserMessage with 'messages' related_name
     - [ ] Create UserChat serializer
     - [ ] Create UserChatViewSet
     - [ ] Create ChannelChat serializer
