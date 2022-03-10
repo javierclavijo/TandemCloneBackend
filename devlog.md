@@ -271,15 +271,15 @@ messages according to user IDs, but moving forward I think that it will provide 
 need to do that with channels, as the Channel model suffices --I'd only have to create a ChannelChatSerializer. So the
 steps would be:
 
-- Create a 'chats' app to differentiate chat functionality from CRUDs
-- Move messages & related models to said app
+- [ ] Create a 'chats' app to differentiate chat functionality from CRUDs
+- [ ] Move messages & related models to said app
 - User chats:
-    - Create UserChat model (pk, users ManyToManyField)
-    - Add chat ForeignKey to UserMessage with 'messages' related_name
-    - Create UserChat serializer
-    - Create UserChatViewSet
-    - Create ChannelChat serializer
-    - Create MessageChatViewSet (with Channel as its model)
+    - [ ] Create UserChat model (pk, users ManyToManyField)
+    - [ ] Add chat ForeignKey to UserMessage with 'messages' related_name
+    - [ ] Create UserChat serializer
+    - [ ] Create UserChatViewSet
+    - [ ] Create ChannelChat serializer
+    - [ ] Create MessageChatViewSet (with Channel as its model)
 
 [//]: # (TODO: create 'chats' app)
 
