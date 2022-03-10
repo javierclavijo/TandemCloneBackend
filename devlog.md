@@ -276,10 +276,10 @@ steps would be:
 - User chats:
     - [x] Create UserChat model (pk, users ManyToManyField)
     - [x] Add chat ForeignKey to UserMessage with 'messages' related_name
-    - [ ] Create UserChat serializer
-    - [ ] Create UserChatViewSet
-    - [ ] Create ChannelChat serializer
-    - [ ] Create MessageChatViewSet (with Channel as its model)
+    - [x] Create UserChat serializer
+    - [x] Create UserChatViewSet
+    - [x] Create ChannelChat serializer
+    - [x] Create MessageChatViewSet (with Channel as its model)
 
 [//]: # (TODO: create 'chats' app)
 

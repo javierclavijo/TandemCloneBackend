@@ -68,7 +68,6 @@ class UserChatMessage(AbstractChatMessage):
         on_delete=models.CASCADE,
         related_name='messages'
     )
-
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

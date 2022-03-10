@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from channels.models import Channel
 from chats.models import UserChat, UserChatMessage, ChannelChatMessage
 
 
@@ -41,4 +42,20 @@ class ChannelChatMessageSerializer(serializers.ModelSerializer):
             'author',
             'content',
             'timestamp'
+        ]
+
+
+class ChannelChatSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        ret = super(ChannelChatSerializer, self).to_representation(instance)
+        del ret['url']
+        return ret
+
+    messages = ChannelChatMessageSerializer(many=True)
+
+    class Meta:
+        model = Channel
+        fields = [
+            'url',
+            'messages'
         ]

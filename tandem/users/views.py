@@ -270,21 +270,3 @@ class UserViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
-
-    @action(url_path=r'chat/(?P<other_user>[0-9]+)', url_name='chat',
-            detail=True, methods=['get'])
-    def chat(self, request, other_user, *args, **kwargs):
-        """
-        Fetches a user's chat with another user.
-        """
-        user = self.get_object()
-        queryset = UserChatMessage.objects.filter(
-            Q(author=user, recipient_id=other_user) |
-            Q(author_id=other_user, recipient=user)
-        )
-        message_serializer = UserChatMessageSerializer(
-            queryset,
-            context={'request': self.request},
-            many=True
-        )
-        return Response(message_serializer.data)

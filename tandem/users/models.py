@@ -15,7 +15,6 @@ class CustomUser(AbstractUser):
         blank=True,
         max_length=2000,
     )
-    #   TODO (low priority): add constraint whereby user must have at least one native and one non-native language
 
 
 class UserLanguage(models.Model):
@@ -60,4 +59,3 @@ class UserInterest(models.Model):
                 fields=['user', 'interest']
             )
         ]
-    # TODO: consider whether to make this into a JSONField

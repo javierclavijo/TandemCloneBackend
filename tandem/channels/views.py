@@ -110,18 +110,6 @@ class ChannelViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'])
-    def chat(self, *args, **kwargs):
-        """
-        Fetches the channel's chat.
-        """
-        message_serializer = ChannelChatMessageSerializer(
-            self.get_object().messages.all(),
-            context={'request': self.request},
-            many=True
-        )
-        return Response(message_serializer.data)
-
 
 class MembershipViewSet(viewsets.ModelViewSet):
     """
