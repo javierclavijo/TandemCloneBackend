@@ -6,7 +6,6 @@ from rest_framework import serializers
 from channels.models import Membership
 from channels.serializers import MembershipSerializer
 from users.models import UserLanguage, UserInterest
-from chats.models import UserChatMessage
 
 
 class UserLanguageSerializer(serializers.ModelSerializer):
@@ -92,7 +91,6 @@ class UserPasswordUpdateSerializer(UserSerializer):
     """
     Serializer to update user's password.
     """
-
     def to_representation(self, instance):
         ret = super(UserPasswordUpdateSerializer, self).to_representation(instance)
         del ret['password']
@@ -112,24 +110,3 @@ class UserPasswordUpdateSerializer(UserSerializer):
         except KeyError:
             return serializers.ValidationError("Attribute 'password' was not sent.")
         return super().update(instance, validated_data)
-
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = [
-            'id',
-            'url',
-            'name'
-        ]
-
-
-class UserChatMessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserChatMessage
-        fields = [
-            'author',
-            'recipient',
-            'content',
-            'timestamp'
-        ]

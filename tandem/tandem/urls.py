@@ -3,6 +3,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from channels.views import ChannelViewSet, MembershipViewSet
+from chats.views import UserChatViewSet
 from users import views
 
 """tandem URL Configuration
@@ -25,6 +26,7 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'channels', ChannelViewSet)
 router.register(r'memberships', MembershipViewSet)
+router.register(r'user_chats', UserChatViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

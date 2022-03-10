@@ -285,3 +285,5 @@ steps would be:
 
 Edit 1: I've finished tests for the user views, so I'll write tests for the channel CRUD views before making the changes
 I've mentioned.
+
+Edit 2: I wrote the channel CRUD and the

@@ -9,8 +9,9 @@ from rest_framework.response import Response
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from users.models import UserLanguage, UserInterest
 from chats.models import UserChatMessage
-from users.serializers import UserSerializer, UserChatMessageSerializer, UserLanguageSerializer, \
+from users.serializers import UserSerializer, UserLanguageSerializer, \
     UserPasswordUpdateSerializer, UserInterestSerializer
+from chats.serializers import UserChatMessageSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
