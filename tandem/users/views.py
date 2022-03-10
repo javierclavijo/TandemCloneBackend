@@ -7,7 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
-from users.models import UserChatMessage, UserLanguage, UserInterest
+from users.models import UserLanguage, UserInterest
+from chats.models import UserChatMessage
 from users.serializers import UserSerializer, UserChatMessageSerializer, UserLanguageSerializer, \
     UserPasswordUpdateSerializer, UserInterestSerializer
 

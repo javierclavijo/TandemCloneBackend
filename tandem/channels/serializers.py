@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from channels.models import Channel, Membership, ChannelInterest, ChannelChatMessage, ChannelRole
+from channels.models import Channel, Membership, ChannelInterest, ChannelRole
+from chats.models import ChannelChatMessage
 
 
 class MembershipSerializer(serializers.ModelSerializer):

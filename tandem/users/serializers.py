@@ -5,7 +5,8 @@ from rest_framework import serializers
 
 from channels.models import Membership
 from channels.serializers import MembershipSerializer
-from users.models import UserLanguage, UserInterest, UserChatMessage
+from users.models import UserLanguage, UserInterest
+from chats.models import UserChatMessage
 
 
 class UserLanguageSerializer(serializers.ModelSerializer):

@@ -2,8 +2,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from common.models import AvailableLanguage, ProficiencyLevel, Interest, AbstractChatMessage, \
-    AbstractChatMessageTranslation, AbstractChatMessageCorrection
+from common.models import AvailableLanguage, ProficiencyLevel, Interest
+from chats.models import AbstractChatMessage, AbstractChatMessageTranslation, AbstractChatMessageCorrection
 
 
 class Channel(models.Model):
@@ -86,46 +86,3 @@ class ChannelInterest(models.Model):
         ]
 
 
-class ChannelChatMessage(AbstractChatMessage):
-    author = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="sent_channel_chat_messages"
-    )
-    channel = models.ForeignKey(
-        to='Channel',
-        on_delete=models.CASCADE,
-        related_name='messages'
-    )
-
-    class Meta:
-        ordering = ['-timestamp']
-
-
-class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
-    message = models.ForeignKey(
-        to='ChannelChatMessage',
-        on_delete=models.CASCADE,
-        related_name='translations'
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name='channel_unique_language_message',
-                fields=['language', 'message']
-            )
-        ]
-
-
-class ChannelChatMessageCorrection(AbstractChatMessageCorrection):
-    message = models.OneToOneField(
-        to='ChannelChatMessage',
-        on_delete=models.CASCADE,
-        related_name='correction',
-    )
-    author = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='author'
-    )

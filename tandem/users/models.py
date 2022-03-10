@@ -2,8 +2,8 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from common.models import AvailableLanguage, ProficiencyLevel, Interest, AbstractChatMessage, \
-    AbstractChatMessageTranslation
+from common.models import AvailableLanguage, ProficiencyLevel, Interest
+from chats.models import AbstractChatMessage, AbstractChatMessageTranslation
 
 
 class CustomUser(AbstractUser):
@@ -61,50 +61,3 @@ class UserInterest(models.Model):
             )
         ]
     # TODO: consider whether to make this into a JSONField
-
-
-class UserChatMessage(AbstractChatMessage):
-    author = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="sent_user_chat_messages"
-    )
-    recipient = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='received_user_chat_messages'
-    )
-
-    class Meta:
-        ordering = ['-timestamp']
-        constraints = [
-            models.CheckConstraint(
-                name='author_not_equals_recipient',
-                check=~models.Q(recipient=models.F('author'))
-            )
-        ]
-
-
-class UserChatMessageTranslation(AbstractChatMessageTranslation):
-    # TODO check if the model makes sense (especially its constraint)
-    message = models.ForeignKey(
-        to='UserChatMessage',
-        on_delete=models.CASCADE,
-        related_name='translations'
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name='user_unique_language_message',
-                fields=['language', 'message']
-            )
-        ]
-
-
-class UserChatMessageCorrection(models.Model):
-    message = models.OneToOneField(
-        to='UserChatMessage',
-        on_delete=models.CASCADE,
-        related_name='correction',
-    )

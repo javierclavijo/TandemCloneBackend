@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'common',
     'users',
-    'channels'
+    'channels',
+    'chats',
 ]
 
 MIDDLEWARE = [

@@ -1,6 +1,4 @@
-from django.conf import settings
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -28,43 +26,3 @@ class Interest(models.TextChoices):
     LITERATURE = _('Literature')
     CINEMA = _('Cinema')
     VIDEO_GAMES = _('Video games')
-
-
-class AbstractChatMessage(models.Model):
-    content = models.TextField(
-        max_length=2048
-    )
-    timestamp = models.DateTimeField(
-        default=timezone.now
-    )
-
-    class Meta:
-        abstract = True
-
-
-class AbstractChatMessageTranslation(models.Model):
-    # TODO: add original language field to translation and correction models
-    # TODO: merge both models
-    language = models.CharField(
-        max_length=2,
-        choices=AvailableLanguage.choices
-    )
-    translated_content = models.TextField(
-        max_length=4096
-    )
-
-    class Meta:
-        abstract = True
-
-
-class AbstractChatMessageCorrection(models.Model):
-    language = models.CharField(
-        max_length=2,
-        choices=AvailableLanguage.choices
-    )
-    corrected_content = models.TextField(
-        max_length=4096
-    )
-
-    class Meta:
-        abstract = True

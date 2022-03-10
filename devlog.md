@@ -271,7 +271,7 @@ messages according to user IDs, but moving forward I think that it will provide 
 need to do that with channels, as the Channel model suffices --I'd only have to create a ChannelChatSerializer. So the
 steps would be:
 
-- [ ] Create a 'chats' app to differentiate chat functionality from CRUDs
+- [x] Create a 'chats' app to differentiate chat functionality from CRUDs
 - [ ] Move messages & related models to said app
 - User chats:
     - [ ] Create UserChat model (pk, users ManyToManyField)
