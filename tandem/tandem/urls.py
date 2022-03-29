@@ -38,6 +38,3 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('chat-list/', ChatListView.as_view())
 ]
-
-# Router object to be used in WS app
-websocket_router = URLRouter([])
