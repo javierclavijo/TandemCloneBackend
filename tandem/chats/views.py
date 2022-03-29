@@ -16,6 +16,9 @@ class UserChatViewSet(viewsets.ModelViewSet):
     class Meta:
         model = UserChat
 
+    def get_queryset(self):
+        return self.request.user.chats.all()
+
     queryset = UserChat.objects.all()
     serializer_class = UserChatSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -28,6 +31,9 @@ class ChannelChatViewSet(viewsets.ModelViewSet):
 
     class Meta:
         model = Channel
+
+    def get_queryset(self):
+        return Channel.objects.filter(memberships__user=self.request.user)
 
     queryset = Channel.objects.all()
     serializer_class = ChannelChatSerializer
