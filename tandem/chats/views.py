@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
-from channels.models import Channel, Membership
+from communities.models import Channel, Membership
 from chats.models import UserChat
 from chats.serializers import UserChatSerializer, ChannelChatSerializer
 

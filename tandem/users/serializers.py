@@ -3,8 +3,8 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 
-from channels.models import Membership
-from channels.serializers import MembershipSerializer
+from communities.models import Membership
+from communities.serializers import MembershipSerializer
 from users.models import UserLanguage, UserInterest
 
 

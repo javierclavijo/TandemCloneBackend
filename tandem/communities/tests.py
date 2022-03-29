@@ -6,9 +6,9 @@ from rest_framework.reverse import reverse
 
 from rest_framework.test import APIClient, APITestCase, APIRequestFactory, force_authenticate
 
-from channels.models import Channel
-from channels.serializers import ChannelSerializer
-from channels.views import ChannelViewSet
+from communities.models import Channel
+from communities.serializers import ChannelSerializer
+from communities.views import ChannelViewSet
 
 
 class UserCrudTests(APITestCase):

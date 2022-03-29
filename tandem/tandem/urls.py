@@ -1,8 +1,9 @@
+from channels.routing import URLRouter
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
-from channels.views import ChannelViewSet, MembershipViewSet
+from communities.views import ChannelViewSet, MembershipViewSet
 from chats.views import UserChatViewSet, ChannelChatViewSet, ChatListView
 from users import views
 
@@ -37,3 +38,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('chat-list/', ChatListView.as_view())
 ]
+
+# Router object to be used in WS app
+websocket_router = URLRouter([])

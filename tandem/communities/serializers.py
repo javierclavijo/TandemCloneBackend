@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from channels.models import Channel, Membership, ChannelInterest, ChannelRole
+from communities.models import Channel, Membership, ChannelInterest, ChannelRole
 
 
 class MembershipSerializer(serializers.ModelSerializer):

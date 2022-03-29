@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.utils.timezone import make_aware
 from faker import Faker
 
-from channels.models import Channel, Membership, ChannelInterest, ChannelRole
+from communities.models import Channel, Membership, ChannelInterest, ChannelRole
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from users.models import UserLanguage, UserInterest
 from chats.models import UserChatMessage, ChannelChatMessage

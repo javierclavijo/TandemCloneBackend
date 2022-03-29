@@ -281,7 +281,14 @@ steps would be:
     - [x] Create ChannelChat serializer
     - [x] Create MessageChatViewSet (with Channel as its model)
 
-[//]: # (TODO: create 'chats' app)
-
 Edit 1: I've finished tests for the user views, so I'll write tests for the channel CRUD views before making the changes
 I've mentioned.
+
+Edit 2: I've written the channel CRUD tests and created the 'chats' app as described. The latter has not been easy, but
+I think it will be worth the effort. My only regret is that the project's model has grown a bit --and it will grow even
+more when I implement the friendship/channel requests features. But I feel like the project needs the models anyway.
+Also, the new views do not need tests yet, as there's no custom code yet, so there's that.
+
+I should probably get going with the frontend and the site's design soon. I think I'll start with the design, and
+implement the friendship features and functional authentication later, or at the same time. I'm getting a bit burnt out
+on the project, writing only the back-end.

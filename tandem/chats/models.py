@@ -128,7 +128,7 @@ class ChannelChatMessage(AbstractChatMessage):
         related_name="sent_channel_chat_messages"
     )
     channel = models.ForeignKey(
-        to='channels.Channel',
+        to='communities.Channel',
         on_delete=models.CASCADE,
         related_name='messages'
     )
