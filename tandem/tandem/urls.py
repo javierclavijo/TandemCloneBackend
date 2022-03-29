@@ -3,7 +3,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from channels.views import ChannelViewSet, MembershipViewSet
-from chats.views import UserChatViewSet, ChannelChatViewSet
+from chats.views import UserChatViewSet, ChannelChatViewSet, ChatListView
 from users import views
 
 """tandem URL Configuration
@@ -34,5 +34,6 @@ router.register(r'channel_chats', ChannelChatViewSet, basename='channelchat')
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('chat-list/', ChatListView.as_view())
 ]

@@ -8,6 +8,7 @@ class MembershipSerializer(serializers.ModelSerializer):
     """
     Serializer used in MembershipViewSet to create, update and delete subscriptions of users to channels.
     """
+
     def to_representation(self, instance):
         ret = super(MembershipSerializer, self).to_representation(instance)
         ret['role'] = instance.get_role_display()
@@ -41,6 +42,7 @@ class ChannelMembershipSerializer(MembershipSerializer):
     Membership serializer to use in channel serializer, for representational purposes. Excludes channel field from
     representation.
     """
+
     class Meta:
         model = Membership
         fields = [
@@ -79,6 +81,7 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Channel
         fields = [
+            'url',
             'id',
             'name',
             'description',
