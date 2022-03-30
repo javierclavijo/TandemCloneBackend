@@ -1,9 +1,12 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
 
-from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from chats.models import AbstractChatMessage, AbstractChatMessageTranslation
+from common.models import AvailableLanguage, ProficiencyLevel, Interest
 
 
 class CustomUser(AbstractUser):
@@ -59,3 +62,10 @@ class UserInterest(models.Model):
                 fields=['user', 'interest']
             )
         ]
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    """Generates an authentication token whenever a user object is created."""
+    if created:
+        Token.objects.create(user=instance)
