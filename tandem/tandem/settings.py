@@ -75,7 +75,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'tandem.wsgi.application'
-ASGI_APPLICATION = "tandem.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -128,6 +127,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication settings
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# Django Channels settings
+
+ASGI_APPLICATION = 'tandem.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # CORS settings
 

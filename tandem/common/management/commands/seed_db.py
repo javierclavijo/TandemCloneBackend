@@ -7,10 +7,10 @@ from django.db import IntegrityError
 from django.utils.timezone import make_aware
 from faker import Faker
 
-from communities.models import Channel, Membership, ChannelInterest, ChannelRole
-from common.models import AvailableLanguage, ProficiencyLevel, Interest
-from users.models import UserLanguage, UserInterest
 from chats.models import UserChatMessage, ChannelChatMessage
+from common.models import AvailableLanguage, ProficiencyLevel, Interest
+from communities.models import Channel, Membership, ChannelInterest, ChannelRole
+from users.models import UserLanguage, UserInterest
 
 
 class Command(BaseCommand):
@@ -49,8 +49,17 @@ class Command(BaseCommand):
         except IntegrityError:
             self.stdout.write(self.style.WARNING('Skipping creation of "admin" user, as it already exists.'))
 
-        # Create and save a list of users
+        # Create and save a list of users. First, create a test user.
         users = []
+        user_id = user_model.objects.create_user(
+            username='test_user',
+            email='test_user@example.com',
+            password="password",
+            description=fake.paragraph(nb_sentences=5)
+        )
+        users.append(user_id)
+        user_id.save()
+
         for i in range(self.USER_COUNT):
             user_profile = fake.simple_profile()
             user_id = user_model.objects.create_user(

@@ -13,3 +13,5 @@ degree.
     - > `python manage.py migrate`
 4. Seed the database
     - > `python manage.py seed_db`
+5. Create Redis Docker container for WS communication
+    - > `docker run -p 6379:6379 -d --name tandem-ws-store redis:6`
