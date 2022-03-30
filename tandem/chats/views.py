@@ -3,9 +3,10 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
+from chats.models import UserChat, UserChatMessage, ChannelChatMessage
+from chats.serializers import UserChatSerializer, ChannelChatSerializer, ChannelChatMessageSerializer, \
+    UserChatMessageSerializer
 from communities.models import Channel, Membership
-from chats.models import UserChat
-from chats.serializers import UserChatSerializer, ChannelChatSerializer
 
 
 class UserChatViewSet(viewsets.ModelViewSet):
@@ -37,6 +38,32 @@ class ChannelChatViewSet(viewsets.ModelViewSet):
 
     queryset = Channel.objects.all()
     serializer_class = ChannelChatSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class UserChatMessageViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to view user chat messages, etc.
+    """
+
+    class Meta:
+        model = UserChatMessage
+
+    queryset = UserChatMessage.objects.all()
+    serializer_class = UserChatMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class ChannelChatMessageViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to view channel chat messages, etc.
+    """
+
+    class Meta:
+        model = ChannelChatMessage
+
+    queryset = ChannelChatMessage.objects.all()
+    serializer_class = ChannelChatMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 

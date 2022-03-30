@@ -5,7 +5,8 @@ from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
 from communities.views import ChannelViewSet, MembershipViewSet
-from chats.views import UserChatViewSet, ChannelChatViewSet, ChatListView
+from chats.views import UserChatViewSet, ChannelChatViewSet, ChatListView, UserChatMessageViewSet, \
+    ChannelChatMessageViewSet
 from users import views
 
 """tandem URL Configuration
@@ -30,6 +31,8 @@ router.register(r'channels', ChannelViewSet, basename='channel')
 router.register(r'memberships', MembershipViewSet)
 router.register(r'user_chats', UserChatViewSet)
 router.register(r'channel_chats', ChannelChatViewSet, basename='channelchat')
+router.register(r'user_chat_messages', UserChatMessageViewSet)
+router.register(r'channel_chat_messages', ChannelChatMessageViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
