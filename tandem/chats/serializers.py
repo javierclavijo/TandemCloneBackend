@@ -30,6 +30,12 @@ class UserChatMessageSerializer(serializers.ModelSerializer):
 
 
 class UserChatSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        """Add the name of the user who is not the request's user to the chat's representation."""
+        ret = super(UserChatSerializer, self).to_representation(instance)
+        ret['name'] = instance.users.exclude(pk=self.context['request'].user.pk).get().username
+        return ret
+
     users = serializers.HyperlinkedRelatedField(
         view_name='customuser-detail',
         queryset=get_user_model().objects.all(),
@@ -61,8 +67,9 @@ class ChannelChatMessageSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class ChannelChatSerializer(serializers.ModelSerializer):
+class ChannelChatSerializer(serializers.HyperlinkedModelSerializer):
     messages = ChannelChatMessageSerializer(many=True, read_only=True)
+    url = serializers.HyperlinkedIdentityField(view_name='channelchat-detail')
 
     class Meta:
         model = Channel
