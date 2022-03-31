@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 
@@ -9,6 +11,7 @@ from common.models import AvailableLanguage
 
 
 class AbstractChatMessage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(
         max_length=2048
     )
@@ -21,8 +24,7 @@ class AbstractChatMessage(models.Model):
 
 
 class AbstractChatMessageTranslation(models.Model):
-    # TODO: add original language field to translation and correction models
-    # TODO: merge both models
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     language = models.CharField(
         max_length=2,
         choices=AvailableLanguage.choices
@@ -36,6 +38,7 @@ class AbstractChatMessageTranslation(models.Model):
 
 
 class AbstractChatMessageCorrection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     language = models.CharField(
         max_length=2,
         choices=AvailableLanguage.choices
@@ -62,6 +65,7 @@ class UserChatMessage(AbstractChatMessage):
         self.chat = chat
         super().save(*args, **kwargs)
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     chat = models.ForeignKey(
         to='UserChat',
         blank=False,
@@ -90,6 +94,7 @@ class UserChatMessage(AbstractChatMessage):
 
 
 class UserChat(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     users = models.ManyToManyField(
         to=settings.AUTH_USER_MODEL,
         blank=False,
@@ -98,6 +103,7 @@ class UserChat(models.Model):
 
 
 class UserChatMessageTranslation(AbstractChatMessageTranslation):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     message = models.ForeignKey(
         to='chats.UserChatMessage',
         on_delete=models.CASCADE,
@@ -114,6 +120,7 @@ class UserChatMessageTranslation(AbstractChatMessageTranslation):
 
 
 class UserChatMessageCorrection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     message = models.OneToOneField(
         to='chats.UserChatMessage',
         on_delete=models.CASCADE,
@@ -122,6 +129,7 @@ class UserChatMessageCorrection(models.Model):
 
 
 class ChannelChatMessage(AbstractChatMessage):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -138,6 +146,7 @@ class ChannelChatMessage(AbstractChatMessage):
 
 
 class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     message = models.ForeignKey(
         to='ChannelChatMessage',
         on_delete=models.CASCADE,
@@ -154,6 +163,7 @@ class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
 
 
 class ChannelChatMessageCorrection(AbstractChatMessageCorrection):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     message = models.OneToOneField(
         to='ChannelChatMessage',
         on_delete=models.CASCADE,

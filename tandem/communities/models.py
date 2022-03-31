@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -10,6 +12,7 @@ class Channel(models.Model):
     def __str__(self):
         return self.name
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=64, unique=True)
     description = models.TextField(
         blank=True,
@@ -44,6 +47,7 @@ class ChannelRole(models.TextChoices):
 
 
 class Membership(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -67,6 +71,7 @@ class Membership(models.Model):
 
 
 class ChannelInterest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     channel = models.ForeignKey(
         to='Channel',
         on_delete=models.CASCADE,
