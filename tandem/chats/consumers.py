@@ -1,37 +1,49 @@
 import json
 
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import JsonWebsocketConsumer
+
+from communities.models import Membership
 
 
-class ChatConsumer(WebsocketConsumer):
+class ChatConsumer(JsonWebsocketConsumer):
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        self.chat_ids = self.get_chat_ids()
 
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
-        )
+        # Join groups of all the user's chats
+        for chat_id in self.chat_ids:
+            async_to_sync(self.channel_layer.group_add)(
+                chat_id,
+                self.channel_name
+            )
 
         self.accept()
 
+    def get_chat_ids(self):
+        # Get user, then fetch list of the user's chat's IDs
+        user = self.scope['user']
+        memberships = Membership.objects.filter(user=user).values_list('channel__id', flat=True)
+        user_chats = user.chats.all().values_list('pk', flat=True)
+        return [str(x) for x in list(memberships) + list(user_chats)]
+
     def disconnect(self, close_code):
         # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name,
-            self.channel_name
-        )
+        for chat_id in self.chat_ids:
+            async_to_sync(self.channel_layer.group_discard)(
+                chat_id,
+                self.channel_name
+            )
 
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+        chat_id = message['chat_id']
+        message_content = message['content']
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
+            chat_id,
             {
                 'type': 'chat_message',
                 'message': message
