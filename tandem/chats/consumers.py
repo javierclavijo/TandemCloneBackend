@@ -34,29 +34,26 @@ class ChatConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
 
-    # Receive message from WebSocket
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        chat_id = message['chat_id']
-        message_content = message['content']
+    # Receive message from WebSocket client, fetch the chat's ID and send it to the respective group
+    def receive_json(self, content):
+        chat_id = content['chat_id']
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             chat_id,
             {
                 'type': 'chat_message',
-                'message': message
+                'message': content
             }
         )
 
-    # Receive message from room group
+    # Receive message from room group, forward it to the client
     def chat_message(self, event):
         message = event['message']
 
         # Send message to WebSocket
-        self.send(text_data=json.dumps({
+        self.send_json({
             'message': message
-        }))
+        })
 
 # Code initially sourced from https://channels.readthedocs.io/en/stable/tutorial/part_2.html
