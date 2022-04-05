@@ -3,6 +3,7 @@ import datetime
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
+from django.db import transaction
 
 from communities.models import Membership
 
@@ -40,9 +41,22 @@ class ChatConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
 
+    @transaction.atomic
+    def save_message(self, message):
+        chat_id = message['chat_id']
+
     # Receive message from WebSocket client, fetch the chat's ID and send it to the respective group
     def receive_json(self, content):
-        chat_id = content['chat_id']
+        # Persist message to DB
+        self.save_message(content)
+
+        try:
+            chat_id = content['chat_id']
+            message_content = content['content']
+        except KeyError:
+            # If the message does not have the required attributes, close the connection.
+            self.disconnect(1003)
+
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         user = self.scope['user']
 
@@ -60,7 +74,7 @@ class ChatConsumer(JsonWebsocketConsumer):
                         "username": user.username
                     },
                     "chat_id": chat_id,
-                    "content": content['content'],
+                    "content": message_content,
                     "timestamp": timestamp
                 },
             }
