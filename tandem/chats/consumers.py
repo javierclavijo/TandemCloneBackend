@@ -1,4 +1,4 @@
-import json
+import datetime
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
@@ -37,13 +37,18 @@ class ChatConsumer(JsonWebsocketConsumer):
     # Receive message from WebSocket client, fetch the chat's ID and send it to the respective group
     def receive_json(self, content):
         chat_id = content['chat_id']
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             chat_id,
             {
                 'type': 'chat_message',
-                'message': content
+                'message': {
+                    "chat_id": chat_id,
+                    "content": content['content'],
+                    "timestamp": timestamp
+                },
             }
         )
 
