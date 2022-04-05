@@ -2,13 +2,20 @@ import datetime
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 
 from communities.models import Membership
 
 
 class ChatConsumer(JsonWebsocketConsumer):
     def connect(self):
-        self.chat_ids = self.get_chat_ids()
+        user = self.scope['user']
+        if isinstance(user, AnonymousUser):
+            # If the user is not authenticated, disconnect to prevent exceptions
+            self.disconnect(1003)
+
+        chat_ids = self.get_chat_ids(user)
+        self.chat_ids = chat_ids
 
         # Join groups of all the user's chats
         for chat_id in self.chat_ids:
@@ -19,9 +26,8 @@ class ChatConsumer(JsonWebsocketConsumer):
 
         self.accept()
 
-    def get_chat_ids(self):
+    def get_chat_ids(self, user):
         # Get user, then fetch list of the user's chat's IDs
-        user = self.scope['user']
         memberships = Membership.objects.filter(user=user).values_list('channel__id', flat=True)
         user_chats = user.chats.all().values_list('pk', flat=True)
         return [str(x) for x in list(memberships) + list(user_chats)]
@@ -38,6 +44,7 @@ class ChatConsumer(JsonWebsocketConsumer):
     def receive_json(self, content):
         chat_id = content['chat_id']
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        user = self.scope['user']
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
@@ -45,6 +52,13 @@ class ChatConsumer(JsonWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': {
+                    "id": "mock_id",
+                    "url": "mock_url",
+                    "author": {
+                        "id": str(user.id),
+                        "url": "mock_url",
+                        "username": user.username
+                    },
                     "chat_id": chat_id,
                     "content": content['content'],
                     "timestamp": timestamp
