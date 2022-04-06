@@ -1,11 +1,10 @@
-import datetime
-
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
-from django.db import transaction
+from django.core.exceptions import PermissionDenied
 
-from communities.models import Membership
+from chats.models import UserChat, ChannelChatMessage, UserChatMessage
+from communities.models import Membership, Channel
 
 
 class ChatConsumer(JsonWebsocketConsumer):
@@ -41,42 +40,76 @@ class ChatConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
 
-    @transaction.atomic
     def save_message(self, message):
-        chat_id = message['chat_id']
+        """Saves a message to the DB before sending it."""
+        try:
+            chat_id = message['chat_id']
+            chat_type = message['chat_type']
+            message_content = message['content']
+            user = self.scope['user']
+
+            message_object = None
+            if chat_type == "channel":
+                channel = Channel.objects.get(chat_id)
+
+                # Check that the user has permission to post in the chat
+                if user not in channel.users:
+                    raise PermissionDenied("User is not allowed to post messages to this chat.")
+
+                message_object = ChannelChatMessage(
+                    content=message_content,
+                    author=user,
+                    channel=channel
+                )
+                message_object.save()
+
+            elif chat_type == "user":
+                chat = UserChat.objects.get(id=chat_id)
+
+                # Check that the user has permission to post in the chat (same as above)
+                if user not in chat.users.all():
+                    raise PermissionDenied("User is not allowed to post messages to this chat.")
+
+                message_object = UserChatMessage(
+                    content=message_content,
+                    author=user,
+                    chat=chat
+                )
+                message_object.save()
+
+            else:
+                raise ValueError("Attribute chat_type must be one of the following: 'channel', 'user'.")
+
+            return {
+                'id': str(message_object.id),
+                'chat_id': chat_id,
+                'url': "mock_url",
+                'author': {
+                    'id': str(user.id),
+                    'url': "mock_url",
+                    'username': user.username
+                },
+                'content': message_content,
+                'timestamp': message_object.timestamp.isoformat(),
+            }
+        except (KeyError, ValueError, Channel.DoesNotExist, UserChat.DoesNotExist, PermissionDenied) as e:
+            # If the message does not have the required attributes or the provided ID is not found, close the
+            # connection.
+            # TODO: log error
+            self.disconnect(1003)
 
     # Receive message from WebSocket client, fetch the chat's ID and send it to the respective group
     def receive_json(self, content):
         # Persist message to DB
-        self.save_message(content)
-
-        try:
-            chat_id = content['chat_id']
-            message_content = content['content']
-        except KeyError:
-            # If the message does not have the required attributes, close the connection.
-            self.disconnect(1003)
-
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        user = self.scope['user']
+        chat_id = content['chat_id']
+        saved_message = self.save_message(content)
 
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             chat_id,
             {
                 'type': 'chat_message',
-                'message': {
-                    "id": "mock_id",
-                    "url": "mock_url",
-                    "author": {
-                        "id": str(user.id),
-                        "url": "mock_url",
-                        "username": user.username
-                    },
-                    "chat_id": chat_id,
-                    "content": message_content,
-                    "timestamp": timestamp
-                },
+                'message': saved_message
             }
         )
 
