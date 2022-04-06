@@ -4,7 +4,7 @@ from collections import OrderedDict
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
-from django.utils.timezone import make_aware
+from django.utils.timezone import get_default_timezone
 from faker import Faker
 
 from chats.models import UserChatMessage, ChannelChatMessage, UserChat
@@ -148,7 +148,7 @@ class Command(BaseCommand):
                         message = UserChatMessage(
                             author=user,
                             content=fake.sentence(nb_words=20),
-                            timestamp=make_aware(fake.date_time_this_month()),
+                            timestamp=fake.date_time_this_month(tzinfo=get_default_timezone()),
                             chat=chat
                         )
                         message.save()
@@ -197,7 +197,7 @@ class Command(BaseCommand):
                     message = ChannelChatMessage(
                         author_id=user,
                         content=fake.sentence(nb_words=20),
-                        timestamp=make_aware(fake.date_time_this_month()),
+                        timestamp=fake.date_time_this_month(tzinfo=get_default_timezone()),
                         channel=channel
                     )
                     message.save()

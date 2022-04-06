@@ -2,9 +2,6 @@ import uuid
 
 from django.conf import settings
 from django.db import models
-
-# Create your models here.
-from django.db.models import F
 from django.utils import timezone
 
 from common.models import AvailableLanguage
@@ -67,7 +64,7 @@ class UserChatMessage(AbstractChatMessage):
     )
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['timestamp']
 
 
 class UserChat(models.Model):
@@ -119,7 +116,7 @@ class ChannelChatMessage(AbstractChatMessage):
     )
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['timestamp']
 
 
 class ChannelChatMessageTranslation(AbstractChatMessageTranslation):
