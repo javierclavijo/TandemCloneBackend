@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.utils.timezone import make_aware
 from faker import Faker
 
-from chats.models import UserChatMessage, ChannelChatMessage
+from chats.models import UserChatMessage, ChannelChatMessage, UserChat
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from communities.models import Channel, Membership, ChannelInterest, ChannelRole
 from users.models import UserLanguage, UserInterest
@@ -51,25 +51,25 @@ class Command(BaseCommand):
 
         # Create and save a list of users. First, create a test user.
         users = []
-        user_id = user_model.objects.create_user(
+        user = user_model.objects.create_user(
             username='test_user',
             email='test_user@example.com',
             password="password",
             description=fake.paragraph(nb_sentences=5)
         )
-        users.append(user_id)
-        user_id.save()
+        users.append(user)
+        user.save()
 
         for i in range(self.USER_COUNT):
             user_profile = fake.simple_profile()
-            user_id = user_model.objects.create_user(
+            user = user_model.objects.create_user(
                 username=user_profile['username'],
                 email=user_profile['mail'],
                 password="password",
                 description=fake.paragraph(nb_sentences=5)
             )
-            users.append(user_id)
-            user_id.save()
+            users.append(user)
+            user.save()
 
         # Fetch the enums for languages, proficiency levels and interests as lists
         languages = list(AvailableLanguage)
@@ -84,22 +84,22 @@ class Command(BaseCommand):
         interests = list(Interest)
 
         # Then, perform additional operations to each user object
-        for user_id in users:
+        for user in users:
             # Add three users as friends to each user
             potential_friends = users.copy()
             # Exclude the user from the list of potential friends to avoid saving themselves as their own friend
-            potential_friends.remove(user_id)
+            potential_friends.remove(user)
             friends = random.sample(potential_friends, k=3)
             for friend in friends:
-                user_id.friends.add(friend)
-            user_id.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully created user "{user_id}"'))
+                user.friends.add(friend)
+            user.save()
+            self.stdout.write(self.style.SUCCESS(f'Successfully created user "{user}"'))
 
             # Add a native language to each user
             available_languages = languages.copy()
             native_language_value = random.choice(languages)
             native_language_object = UserLanguage(
-                user=user_id,
+                user=user,
                 language=native_language_value,
                 level=ProficiencyLevel.NATIVE
             )
@@ -109,7 +109,7 @@ class Command(BaseCommand):
             # avoid setting it again as the user's foreign language
             available_languages.remove(native_language_value)
             foreign_language_object = UserLanguage(
-                user=user_id,
+                user=user,
                 language=random.choice(available_languages),
                 level=random.choice(proficiency_levels)
             )
@@ -119,24 +119,40 @@ class Command(BaseCommand):
             user_interests = random.sample(interests, k=2)
             for interest in user_interests:
                 interest_object = UserInterest(
-                    user=user_id,
+                    user=user,
                     interest=interest
                 )
                 interest_object.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully added languages and interests to user "{user_id}"'))
+            self.stdout.write(self.style.SUCCESS(f'Successfully added languages and interests to user "{user}"'))
 
-            # Create user messages
-            # A number of messages is created randomly for each friend
-            for friend_id in user_id.friends.values_list('id', flat=True):
-                for i in range(10):
-                    message = UserChatMessage(
-                        author=user_id,
-                        content=fake.sentence(nb_words=20),
-                        timestamp=make_aware(fake.date_time_this_month()),
-                        recipient_id=friend_id
-                    )
-                    message.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully added messages to user "{user_id}"'))
+        # Create user chats and messages
+        # A number of messages is created randomly for each friend. This must be kept in a separate loop, as friends are
+        # added on user creation --thus, no messages would be created from a user to a friend that is created later and
+        # adds them.
+        for user in users:
+            for friend in user.friends.all():
+                chat = None
+                try:
+                    # Check if a chat exists for the two users, and create it if it doesn't
+                    chat = UserChat.objects.filter(users=user).get(users=friend)
+
+                except UserChat.DoesNotExist:
+                    chat = UserChat()
+                    chat.save()
+                    chat.users.add(friend)
+                    chat.users.add(user)
+                    chat.save()
+
+                finally:
+                    for i in range(10):
+                        message = UserChatMessage(
+                            author=user,
+                            content=fake.sentence(nb_words=20),
+                            timestamp=make_aware(fake.date_time_this_month()),
+                            chat=chat
+                        )
+                        message.save()
+            self.stdout.write(self.style.SUCCESS(f'Successfully added messages to user "{user}"'))
 
         # Create channel
         # A channel is created for each available language. All languages span levels A1 through C2
@@ -169,9 +185,9 @@ class Command(BaseCommand):
                 .filter(language=channel.language) \
                 .exclude(level=ProficiencyLevel.NATIVE) \
                 .values_list('user', flat=True)
-            for user_id in users:
+            for user in users:
                 membership = Membership(
-                    user_id=user_id,
+                    user_id=user,
                     channel=channel,
                     role=random.choice(list(ChannelRole))
                 )
@@ -179,7 +195,7 @@ class Command(BaseCommand):
 
                 for i in range(5):
                     message = ChannelChatMessage(
-                        author_id=user_id,
+                        author_id=user,
                         content=fake.sentence(nb_words=20),
                         timestamp=make_aware(fake.date_time_this_month()),
                         channel=channel
@@ -187,5 +203,5 @@ class Command(BaseCommand):
                     message.save()
 
                 self.stdout.write(self.style.SUCCESS(
-                    f'Successfully subscribed user with id {user_id} to channel "{channel.name}" and created messages'
+                    f'Successfully subscribed user with id {user} to channel "{channel.name}" and created messages'
                 ))

@@ -52,18 +52,6 @@ class AbstractChatMessageCorrection(models.Model):
 
 
 class UserChatMessage(AbstractChatMessage):
-    def save(self, *args, **kwargs):
-        # Get or create a UserChat object
-        try:
-            chat = UserChat.objects.filter(users__id=self.author_id).get(users__id=self.recipient_id)
-        except UserChat.DoesNotExist:
-            chat = UserChat()
-            chat.save()
-            chat.users.add(self.author)
-            chat.users.add(self.recipient)
-            chat.save()
-        self.chat = chat
-        super().save(*args, **kwargs)
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     chat = models.ForeignKey(
@@ -77,20 +65,9 @@ class UserChatMessage(AbstractChatMessage):
         on_delete=models.CASCADE,
         related_name="sent_user_chat_messages"
     )
-    recipient = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='received_user_chat_messages'
-    )
 
     class Meta:
         ordering = ['-timestamp']
-        constraints = [
-            models.CheckConstraint(
-                name='author_not_equals_recipient',
-                check=~models.Q(recipient=models.F('author'))
-            )
-        ]
 
 
 class UserChat(models.Model):
