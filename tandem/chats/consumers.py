@@ -48,12 +48,11 @@ class ChatConsumer(JsonWebsocketConsumer):
             message_content = message['content']
             user = self.scope['user']
 
-            message_object = None
             if chat_type == "channel":
-                channel = Channel.objects.get(chat_id)
+                channel = Channel.objects.get(id=chat_id)
 
                 # Check that the user has permission to post in the chat
-                if user not in channel.users:
+                if not channel.memberships.get(user=user):
                     raise PermissionDenied("User is not allowed to post messages to this chat.")
 
                 message_object = ChannelChatMessage(
