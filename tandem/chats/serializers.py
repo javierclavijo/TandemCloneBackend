@@ -55,6 +55,25 @@ class UserChatSerializer(serializers.ModelSerializer):
         ]
 
 
+class UserChatListSerializer(UserChatSerializer):
+    """Serializer class for the user chat list view. Displays only the latest message sent to the chat."""
+    messages = serializers.SerializerMethodField(method_name='get_messages')
+
+    def get_messages(self, instance):
+        queryset = instance.messages.order_by('-timestamp')[:1]
+        return UserChatMessageSerializer(queryset, many=True, read_only=True,
+                                         context={'request': self.context['request']}).data
+
+    class Meta:
+        model = UserChat
+        fields = [
+            'id',
+            'url',
+            'users',
+            'messages'
+        ]
+
+
 class ChannelChatMessageSerializer(serializers.HyperlinkedModelSerializer):
     author = ChatMessageAuthorSerializer(read_only=True)
 
@@ -78,6 +97,25 @@ class ChannelChatSerializer(serializers.HyperlinkedModelSerializer):
 
     messages = ChannelChatMessageSerializer(many=True, read_only=True)
     url = serializers.HyperlinkedIdentityField(view_name='channelchat-detail')
+
+    class Meta:
+        model = Channel
+        fields = [
+            'id',
+            'url',
+            'name',
+            'messages'
+        ]
+
+
+class ChannelChatListSerializer(ChannelChatSerializer):
+    """Serializer class for the channel chat list view. Displays only the latest message sent to the chat."""
+    messages = serializers.SerializerMethodField(method_name='get_messages')
+
+    def get_messages(self, instance):
+        queryset = instance.messages.order_by('-timestamp')[:1]
+        return ChannelChatMessageSerializer(queryset, many=True, read_only=True,
+                                            context={'request': self.context['request']}).data
 
     class Meta:
         model = Channel

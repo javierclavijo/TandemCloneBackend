@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from chats.models import UserChat, UserChatMessage, ChannelChatMessage
 from chats.serializers import UserChatSerializer, ChannelChatSerializer, ChannelChatMessageSerializer, \
-    UserChatMessageSerializer
+    UserChatMessageSerializer, UserChatListSerializer, ChannelChatListSerializer
 from communities.models import Channel, Membership
 
 
@@ -17,11 +17,18 @@ class UserChatViewSet(viewsets.ModelViewSet):
     class Meta:
         model = UserChat
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            if hasattr(self, 'list_serializer_class'):
+                return self.list_serializer_class
+        return self.serializer_class
+
     def get_queryset(self):
         return self.request.user.chats.all()
 
     queryset = UserChat.objects.all()
     serializer_class = UserChatSerializer
+    list_serializer_class = UserChatListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
@@ -33,11 +40,18 @@ class ChannelChatViewSet(viewsets.ModelViewSet):
     class Meta:
         model = Channel
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            if hasattr(self, 'list_serializer_class'):
+                return self.list_serializer_class
+        return self.serializer_class
+
     def get_queryset(self):
         return Channel.objects.filter(memberships__user=self.request.user)
 
     queryset = Channel.objects.all()
     serializer_class = ChannelChatSerializer
+    list_serializer_class = ChannelChatListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
