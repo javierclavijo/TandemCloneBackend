@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Q
 from rest_framework import permissions, status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -8,10 +7,8 @@ from rest_framework.response import Response
 
 from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from users.models import UserLanguage, UserInterest
-from chats.models import UserChatMessage
 from users.serializers import UserSerializer, UserLanguageSerializer, \
     UserPasswordUpdateSerializer, UserInterestSerializer
-from chats.serializers import UserChatMessageSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -269,4 +266,11 @@ class UserViewSet(viewsets.ModelViewSet):
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def me(self, request, *args, **kwargs):
+        """Get the logged-in user's object."""
+        instance = request.user
+        serializer = self.get_serializer(instance)
         return Response(serializer.data)
