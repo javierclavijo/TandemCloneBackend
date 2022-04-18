@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from chats.models import UserChat, UserChatMessage, ChannelChatMessage
 from communities.models import Channel
@@ -34,7 +35,11 @@ class UserChatSerializer(serializers.ModelSerializer):
         """Add the name of the user who is not the request's user to the chat's representation. Additionally,
         add a chat type attribute to allow the application to determine the chat's type. """
         ret = super(UserChatSerializer, self).to_representation(instance)
-        ret['name'] = instance.users.exclude(pk=self.context['request'].user.pk).get().username
+        other_user = instance.users.exclude(pk=self.context['request'].user.pk).get()
+        ret['name'] = other_user.username
+        ret['info_url'] = self.context['request'].build_absolute_uri(
+            reverse('customuser-detail', kwargs={'pk': other_user.id})
+        )
         ret['chat_type'] = 'user'
         return ret
 
@@ -44,14 +49,12 @@ class UserChatSerializer(serializers.ModelSerializer):
         many=True
     )
     messages = UserChatMessageSerializer(many=True)
-    info_url = serializers.HyperlinkedIdentityField(view_name='customuser-detail')
 
     class Meta:
         model = UserChat
         fields = [
             'id',
             'url',
-            'info_url',
             'users',
             'messages'
         ]
@@ -71,7 +74,6 @@ class UserChatListSerializer(UserChatSerializer):
         fields = [
             'id',
             'url',
-            'info_url',
             'users',
             'messages'
         ]
