@@ -4,10 +4,10 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from communities.models import Channel, Membership, ChannelInterest
-from communities.serializers import ChannelSerializer, MembershipSerializer, ChannelInterestSerializer
-from chats.serializers import ChannelChatMessageSerializer
 from common.models import Interest
+from common.serializers import MembershipSerializer
+from communities.models import Channel, Membership, ChannelInterest
+from communities.serializers import ChannelSerializer, ChannelInterestSerializer
 
 
 class ChannelViewSet(viewsets.ModelViewSet):
