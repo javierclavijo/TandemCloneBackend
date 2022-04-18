@@ -44,12 +44,14 @@ class UserChatSerializer(serializers.ModelSerializer):
         many=True
     )
     messages = UserChatMessageSerializer(many=True)
+    user_url = serializers.HyperlinkedIdentityField(view_name='customuser-detail')
 
     class Meta:
         model = UserChat
         fields = [
             'id',
             'url',
+            'user_url',
             'users',
             'messages'
         ]
@@ -69,6 +71,7 @@ class UserChatListSerializer(UserChatSerializer):
         fields = [
             'id',
             'url',
+            'user_url',
             'users',
             'messages'
         ]
@@ -97,12 +100,14 @@ class ChannelChatSerializer(serializers.HyperlinkedModelSerializer):
 
     messages = ChannelChatMessageSerializer(many=True, read_only=True)
     url = serializers.HyperlinkedIdentityField(view_name='channelchat-detail')
+    channel_url = serializers.HyperlinkedIdentityField(view_name='channel-detail')
 
     class Meta:
         model = Channel
         fields = [
             'id',
             'url',
+            'channel_url',
             'name',
             'messages'
         ]
@@ -122,6 +127,7 @@ class ChannelChatListSerializer(ChannelChatSerializer):
         fields = [
             'id',
             'url',
+            'channel_url',
             'name',
             'messages'
         ]
