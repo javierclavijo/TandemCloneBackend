@@ -34,11 +34,15 @@ class ChatConsumer(JsonWebsocketConsumer):
 
     def disconnect(self, close_code):
         # Leave room group
-        for chat_id in self.chat_ids:
-            async_to_sync(self.channel_layer.group_discard)(
-                chat_id,
-                self.channel_name
-            )
+        try:
+            for chat_id in self.chat_ids:
+                async_to_sync(self.channel_layer.group_discard)(
+                    chat_id,
+                    self.channel_name
+                )
+        except AttributeError as e:
+            # If the consumer object has no 'chat_ids' attribute (i.e. is not properly initialized), do nothing
+            pass
 
     def save_message(self, message):
         """Saves a message to the DB before sending it."""
