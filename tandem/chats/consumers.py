@@ -8,41 +8,36 @@ from communities.models import Membership, Channel
 
 
 class ChatConsumer(JsonWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super(ChatConsumer, self).__init__(*args, **kwargs)
+        self.chat_ids = []
+
     def connect(self):
         user = self.scope['user']
-        if isinstance(user, AnonymousUser):
-            # If the user is not authenticated, disconnect to prevent exceptions
+        if not isinstance(user, AnonymousUser):
+            # Get user chats, add them to self.groups and add them to the channel layer's groups
+            self.get_chat_ids(user)
+            for chat_id in self.chat_ids:
+                async_to_sync(self.channel_layer.group_add)(
+                    chat_id,
+                    self.channel_name
+                )
+            self.accept()
+        else:
             self.disconnect(1003)
-
-        chat_ids = self.get_chat_ids(user)
-        self.chat_ids = chat_ids
-
-        # Join groups of all the user's chats
-        for chat_id in self.chat_ids:
-            async_to_sync(self.channel_layer.group_add)(
-                chat_id,
-                self.channel_name
-            )
-
-        self.accept()
 
     def get_chat_ids(self, user):
         # Get user, then fetch list of the user's chat's IDs
         memberships = Membership.objects.filter(user=user).values_list('channel__id', flat=True)
         user_chats = user.chats.all().values_list('pk', flat=True)
-        return [str(x) for x in list(memberships) + list(user_chats)]
+        self.chat_ids = [str(x) for x in list(memberships) + list(user_chats)]
 
     def disconnect(self, close_code):
-        # Leave room group
-        try:
-            for chat_id in self.chat_ids:
-                async_to_sync(self.channel_layer.group_discard)(
-                    chat_id,
-                    self.channel_name
-                )
-        except AttributeError as e:
-            # If the consumer object has no 'chat_ids' attribute (i.e. is not properly initialized), do nothing
-            pass
+        for chat_id in self.chat_ids:
+            async_to_sync(self.channel_layer.group_discard)(
+                chat_id,
+                self.channel_name
+            )
 
     def save_message(self, message):
         """Saves a message to the DB before sending it."""
