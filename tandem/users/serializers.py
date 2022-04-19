@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from common.serializers import MembershipSerializer
 from communities.models import Membership
-from users.models import UserLanguage, UserInterest
+from users.models import UserLanguage
 
 
 class UserLanguageSerializer(serializers.ModelSerializer):
@@ -24,25 +24,6 @@ class UserLanguageSerializer(serializers.ModelSerializer):
             'user',
             'language',
             'level'
-        ]
-
-
-class UserInterestSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        """
-        Return the interest's display name as the instance's representation.
-        """
-        ret = super(UserInterestSerializer, self).to_representation(instance)
-        return ret['display_name']
-
-    display_name = serializers.CharField(source='get_interest_display', read_only=True)
-
-    class Meta:
-        model = UserInterest
-        fields = [
-            'user',
-            'interest',
-            'display_name'
         ]
 
 
@@ -67,7 +48,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     set to be read only to avoid unwanted updates, as they should be done through custom controllers (views).
     """
     languages = UserLanguageSerializer(many=True, read_only=True)
-    interests = UserInterestSerializer(many=True, required=False, read_only=True)
     memberships = UserMembershipSerializer(many=True, read_only=True)
     email = serializers.EmailField(allow_blank=False, label='Email address', max_length=254, required=True)
 
@@ -81,7 +61,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'description',
             'friends',
             'languages',
-            'interests',
             'memberships'
         ]
 
@@ -90,6 +69,7 @@ class UserPasswordUpdateSerializer(UserSerializer):
     """
     Serializer to update user's password.
     """
+
     def to_representation(self, instance):
         ret = super(UserPasswordUpdateSerializer, self).to_representation(instance)
         del ret['password']

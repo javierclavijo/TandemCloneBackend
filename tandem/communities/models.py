@@ -4,8 +4,8 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from common.models import AvailableLanguage, ProficiencyLevel, Interest
 from chats.models import AbstractChatMessage, AbstractChatMessageTranslation, AbstractChatMessageCorrection
+from common.models import AvailableLanguage, ProficiencyLevel
 
 
 class Channel(models.Model):
@@ -22,22 +22,10 @@ class Channel(models.Model):
         max_length=2,
         choices=AvailableLanguage.choices
     )
-    start_proficiency_level = models.CharField(
+    level = models.CharField(
         max_length=2,
         choices=ProficiencyLevel.choices
     )
-    end_proficiency_level = models.CharField(
-        max_length=2,
-        choices=ProficiencyLevel.choices
-    )
-
-    class Meta:
-        constraints = [
-            models.CheckConstraint(
-                name='start_proficiency_level_gte_end_proficiency_level',
-                check=models.Q(end_proficiency_level__gte=models.F('start_proficiency_level'))
-            )
-        ]
 
 
 class ChannelRole(models.TextChoices):
@@ -68,26 +56,3 @@ class Membership(models.Model):
         constraints = [
             models.UniqueConstraint(name='unique_user_channel', fields=['user', 'channel'])
         ]
-
-
-class ChannelInterest(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    channel = models.ForeignKey(
-        to='Channel',
-        on_delete=models.CASCADE,
-        related_name='interests'
-    )
-    interest = models.CharField(
-        choices=Interest.choices,
-        max_length=32
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name='unique_channel_interest',
-                fields=['channel', 'interest']
-            )
-        ]
-
-

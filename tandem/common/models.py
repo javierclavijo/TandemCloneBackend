@@ -11,18 +11,7 @@ class AvailableLanguage(models.TextChoices):
 
 
 class ProficiencyLevel(models.TextChoices):
-    A1 = 'A1'
-    A2 = 'A2'
-    B1 = 'B1'
-    B2 = 'B2'
-    C1 = 'C1'
-    C2 = 'C2'
-    NATIVE = 'N'
-
-
-class Interest(models.TextChoices):
-    SPORTS = _('Sports')
-    MUSIC = _('Music')
-    LITERATURE = _('Literature')
-    CINEMA = _('Cinema')
-    VIDEO_GAMES = _('Video games')
+    BEGINNER = 'BE', _('Beginner')
+    INTERMEDIATE = 'IN', _('Intermediate')
+    ADVANCED = 'AD', _('Advanced')
+    NATIVE = 'NA'

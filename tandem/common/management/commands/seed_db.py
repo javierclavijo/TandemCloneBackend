@@ -8,9 +8,9 @@ from django.utils.timezone import get_default_timezone
 from faker import Faker
 
 from chats.models import UserChatMessage, ChannelChatMessage, UserChat
-from common.models import AvailableLanguage, ProficiencyLevel, Interest
-from communities.models import Channel, Membership, ChannelInterest, ChannelRole
-from users.models import UserLanguage, UserInterest
+from common.models import AvailableLanguage, ProficiencyLevel
+from communities.models import Channel, Membership, ChannelRole
+from users.models import UserLanguage
 
 
 class Command(BaseCommand):
@@ -71,17 +71,14 @@ class Command(BaseCommand):
             users.append(user)
             user.save()
 
-        # Fetch the enums for languages, proficiency levels and interests as lists
+        # Fetch the enums for languages and proficiency levels as lists
         languages = list(AvailableLanguage)
         proficiency_levels = [
-            ProficiencyLevel.A1,
-            ProficiencyLevel.A2,
-            ProficiencyLevel.B1,
-            ProficiencyLevel.B2,
-            ProficiencyLevel.C1,
-            ProficiencyLevel.C2,
+            ProficiencyLevel.BEGINNER,
+            ProficiencyLevel.INTERMEDIATE,
+            ProficiencyLevel.ADVANCED,
+            ProficiencyLevel.NATIVE,
         ]
-        interests = list(Interest)
 
         # Then, perform additional operations to each user object
         for user in users:
@@ -115,15 +112,7 @@ class Command(BaseCommand):
             )
             foreign_language_object.save()
 
-            # Add two interests to each user
-            user_interests = random.sample(interests, k=2)
-            for interest in user_interests:
-                interest_object = UserInterest(
-                    user=user,
-                    interest=interest
-                )
-                interest_object.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully added languages and interests to user "{user}"'))
+            self.stdout.write(self.style.SUCCESS(f'Successfully added languages to user "{user}"'))
 
         # Create user chats and messages
         # A number of messages is created randomly for each friend. This must be kept in a separate loop, as friends are
@@ -155,25 +144,17 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Successfully added messages to user "{user}"'))
 
         # Create channel
-        # A channel is created for each available language. All languages span levels A1 through C2
+        # A channel is created for each available language, with an Intermediate language level
         channels = []
         for language in languages:
             channel = Channel(
                 name=fake.slug(),
                 description=fake.paragraph(nb_sentences=5),
                 language=language,
-                start_proficiency_level=proficiency_levels[0],
-                end_proficiency_level=proficiency_levels[-1]
+                level=proficiency_levels[1]
             )
             channels.append(channel)
             channel.save()
-
-            # Add a random interest to the channel
-            channel_interest = ChannelInterest(
-                channel=channel,
-                interest=random.choice(interests)
-            )
-            channel_interest.save()
 
             self.stdout.write(self.style.SUCCESS(f'Successfully created channel "{channel.name}"'))
 

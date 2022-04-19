@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
 from chats.models import AbstractChatMessage, AbstractChatMessageTranslation
-from common.models import AvailableLanguage, ProficiencyLevel, Interest
+from common.models import AvailableLanguage, ProficiencyLevel
 
 
 class CustomUser(AbstractUser):
@@ -44,27 +44,6 @@ class UserLanguage(models.Model):
             models.UniqueConstraint(
                 name='unique_user_language',
                 fields=['user', 'language']
-            )
-        ]
-
-
-class UserInterest(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='interests'
-    )
-    interest = models.CharField(
-        choices=Interest.choices,
-        max_length=32
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name='unique_user_interest',
-                fields=['user', 'interest']
             )
         ]
 
