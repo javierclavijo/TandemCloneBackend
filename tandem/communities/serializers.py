@@ -16,6 +16,7 @@ class ChannelMembershipSerializer(MembershipSerializer):
     class Meta:
         model = Membership
         fields = [
+            'id',
             'url',
             'user',
             'role'

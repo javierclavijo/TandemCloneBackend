@@ -30,6 +30,7 @@ class MembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Membership
         fields = [
+            'id',
             'url',
             'channel',
             'user',

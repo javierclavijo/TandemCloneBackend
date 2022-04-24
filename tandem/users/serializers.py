@@ -36,6 +36,7 @@ class UserMembershipSerializer(MembershipSerializer):
     class Meta:
         model = Membership
         fields = [
+            'id',
             'url',
             'channel',
             'role'
