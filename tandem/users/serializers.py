@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
+from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
 from common.serializers import MembershipSerializer
-from communities.models import Membership
+from communities.models import Membership, Channel
 from users.models import UserLanguage
 
 
@@ -49,8 +50,42 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     set to be read only to avoid unwanted updates, as they should be done through custom controllers (views).
     """
     languages = UserLanguageSerializer(many=True, read_only=True)
-    memberships = UserMembershipSerializer(many=True, read_only=True)
-    email = serializers.EmailField(allow_blank=False, label='Email address', max_length=254, required=True)
+
+    def build_nested_field(self, field_name, relation_info, nested_depth):
+        """
+        Create nested fields for forward and reverse relationships.
+        Source: https://stackoverflow.com/a/50633184
+        """
+
+        class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
+            class Meta:
+                model = relation_info.related_model
+                depth = nested_depth - 1
+                fields = ['id', 'url', 'username', 'description']
+
+        class NestedChannelSerializer(serializers.HyperlinkedModelSerializer):
+            class Meta:
+                model = Channel
+                depth = nested_depth - 2
+                fields = ['id', 'url', 'name', 'description', 'language', 'level']
+
+        class NestedMembershipSerializer(serializers.HyperlinkedModelSerializer):
+            channel = NestedChannelSerializer(read_only=True)
+
+            class Meta:
+                model = relation_info.related_model
+                depth = nested_depth - 1
+                fields = ['id', 'url', 'channel', 'role']
+
+        field_class = NestedUserSerializer
+        if field_name == 'friends':
+            field_class = NestedUserSerializer
+        if field_name == 'memberships':
+            field_class = NestedMembershipSerializer
+
+        field_kwargs = get_nested_relation_kwargs(relation_info)
+
+        return field_class, field_kwargs
 
     class Meta:
         model = get_user_model()
@@ -58,12 +93,12 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'url',
             'username',
-            'email',
             'description',
             'friends',
             'languages',
             'memberships'
         ]
+        depth = 2
 
 
 class UserPasswordUpdateSerializer(UserSerializer):

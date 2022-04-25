@@ -1,33 +1,41 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
-from common.serializers import MembershipSerializer
-from communities.models import Channel, Membership
-from users.serializers import UserSerializer
-
-
-class ChannelMembershipSerializer(MembershipSerializer):
-    """
-    Membership serializer to use in channel serializer, for representational purposes. Excludes channel field from
-    representation.
-    """
-
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = Membership
-        fields = [
-            'id',
-            'url',
-            'user',
-            'role'
-        ]
+from communities.models import Channel
 
 
 class ChannelSerializer(serializers.HyperlinkedModelSerializer):
     """
     Channel serializer class.
     """
-    memberships = ChannelMembershipSerializer(many=True, read_only=True)
+
+    def build_nested_field(self, field_name, relation_info, nested_depth):
+        """
+        Create nested fields for forward and reverse relationships.
+        Source: https://stackoverflow.com/a/50633184
+        """
+
+        class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
+            class Meta:
+                model = get_user_model()
+                depth = nested_depth - 1
+                fields = ['id', 'url', 'username', 'description']
+
+        class NestedMembershipSerializer(serializers.HyperlinkedModelSerializer):
+            user = NestedUserSerializer(read_only=True)
+
+            class Meta:
+                model = relation_info.related_model
+                depth = nested_depth - 1
+                fields = ['id', 'url', 'user', 'role']
+
+        if field_name == 'memberships':
+            field_class = NestedMembershipSerializer
+
+        field_kwargs = get_nested_relation_kwargs(relation_info)
+
+        return field_class, field_kwargs
 
     class Meta:
         model = Channel
@@ -40,3 +48,4 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
             'level',
             'memberships',
         ]
+        depth = 2
