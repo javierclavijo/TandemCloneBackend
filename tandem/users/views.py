@@ -214,3 +214,15 @@ class UserViewSet(viewsets.ModelViewSet):
         instance = request.user
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+
+class UserLanguageViewSet(viewsets.ModelViewSet):
+    """
+    API endpoints that allow users to be viewed or edited.
+    """
+
+    class Meta:
+        model = UserLanguage
+
+    queryset = UserLanguage.objects.all()
+    serializer_class = UserLanguageSerializer

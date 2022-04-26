@@ -8,20 +8,12 @@ from communities.models import Membership, Channel
 from users.models import UserLanguage
 
 
-class UserLanguageSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        """
-        Exclude id and user attributes from the object's serialization.
-        """
-        ret = super(UserLanguageSerializer, self).to_representation(instance)
-        del ret['id']
-        del ret['user']
-        return ret
-
+class UserLanguageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = UserLanguage
         fields = [
             'id',
+            'url',
             'user',
             'language',
             'level'

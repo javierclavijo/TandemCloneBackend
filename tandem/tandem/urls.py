@@ -27,6 +27,7 @@ Including another URLconf
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
+router.register(r'user_languages', views.UserLanguageViewSet)
 router.register(r'channels', ChannelViewSet, basename='channel')
 router.register(r'memberships', MembershipViewSet)
 router.register(r'user_chats', UserChatViewSet)
