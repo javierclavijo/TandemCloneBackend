@@ -14,7 +14,7 @@ class ChatMessageAuthorSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class UserChatMessageSerializer(serializers.ModelSerializer):
+class UserChatMessageSerializer(serializers.HyperlinkedModelSerializer):
     author = ChatMessageAuthorSerializer(read_only=True)
 
     class Meta:
@@ -23,6 +23,7 @@ class UserChatMessageSerializer(serializers.ModelSerializer):
             'id',
             'url',
             'author',
+            'chat',
             'content',
             'timestamp'
         ]
@@ -60,6 +61,7 @@ class ChannelChatMessageSerializer(serializers.HyperlinkedModelSerializer):
             'id',
             'url',
             'author',
+            'channel',
             'content',
             'timestamp'
         ]
