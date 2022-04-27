@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
 from chats.serializers import ChannelChatMessageSerializer
@@ -16,6 +17,11 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
         Create nested fields for forward and reverse relationships.
         Source: https://stackoverflow.com/a/50633184
         """
+
+        def to_representation(self, instance):
+            ret = super(ChannelSerializer, self).to_representation(instance)
+            ret['messageUrl'] = str(reverse('channelchatmessage-list')) + '?channel=' + str(instance.id)
+            return ret
 
         class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:

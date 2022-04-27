@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
 from chats.models import UserChat, UserChatMessage, ChannelChatMessage
@@ -32,6 +33,11 @@ class UserChatMessageSerializer(serializers.HyperlinkedModelSerializer):
 
 class UserChatSerializer(serializers.HyperlinkedModelSerializer):
     messages = serializers.SerializerMethodField(method_name='get_messages')
+
+    def to_representation(self, instance):
+        ret = super(UserChatSerializer, self).to_representation(instance)
+        ret['messageUrl'] = str(reverse('channelchatmessage-list')) + '?memberships__user=' + str(instance.id)
+        return ret
 
     def get_messages(self, instance):
         queryset = instance.messages.order_by('-timestamp')[:1]
