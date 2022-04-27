@@ -47,7 +47,7 @@ class ChatConsumer(JsonWebsocketConsumer):
             message_content = message['content']
             user = self.scope['user']
 
-            if chat_type == "channel":
+            if chat_type == "channels":
                 channel = Channel.objects.get(id=chat_id)
 
                 # Check that the user has permission to post in the chat
@@ -61,7 +61,7 @@ class ChatConsumer(JsonWebsocketConsumer):
                 )
                 message_object.save()
 
-            elif chat_type == "user":
+            elif chat_type == "users":
                 chat = UserChat.objects.get(id=chat_id)
 
                 # Check that the user has permission to post in the chat (same as above)

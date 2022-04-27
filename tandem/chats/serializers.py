@@ -36,7 +36,8 @@ class UserChatSerializer(serializers.HyperlinkedModelSerializer):
 
     def to_representation(self, instance):
         ret = super(UserChatSerializer, self).to_representation(instance)
-        ret['messageUrl'] = str(reverse('channelchatmessage-list')) + '?memberships__user=' + str(instance.id)
+        ret['messageUrl'] = self.context['request'].build_absolute_uri(
+            str(reverse('userchatmessage-list')) + '?chat=' + str(instance.id))
         return ret
 
     def get_messages(self, instance):

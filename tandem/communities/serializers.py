@@ -12,16 +12,17 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
     Channel serializer class.
     """
 
+    def to_representation(self, instance):
+        ret = super(ChannelSerializer, self).to_representation(instance)
+        ret['messageUrl'] = self.context['request'].build_absolute_uri(
+            str(reverse('channelchatmessage-list')) + '?channel=' + str(instance.id))
+        return ret
+
     def build_nested_field(self, field_name, relation_info, nested_depth):
         """
         Create nested fields for forward and reverse relationships.
         Source: https://stackoverflow.com/a/50633184
         """
-
-        def to_representation(self, instance):
-            ret = super(ChannelSerializer, self).to_representation(instance)
-            ret['messageUrl'] = str(reverse('channelchatmessage-list')) + '?channel=' + str(instance.id)
-            return ret
 
         class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
