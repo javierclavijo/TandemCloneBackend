@@ -1,4 +1,3 @@
-import django_filters.rest_framework
 from rest_framework import permissions, viewsets
 
 from chats.models import UserChat, UserChatMessage, ChannelChatMessage
@@ -23,6 +22,8 @@ class UserChatViewSet(viewsets.ModelViewSet):
     queryset = UserChat.objects.all()
     serializer_class = UserChatSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filterset_fields = ('users',)
+
 
 
 class UserChatMessageViewSet(viewsets.ModelViewSet):
