@@ -37,6 +37,8 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
 
         return field_class, field_kwargs
 
+    image = serializers.ImageField(required=False)
+
     class Meta:
         model = Channel
         fields = [
@@ -47,5 +49,6 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
             'language',
             'level',
             'memberships',
+            'image',
         ]
         depth = 2

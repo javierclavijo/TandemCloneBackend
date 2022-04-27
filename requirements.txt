@@ -7,3 +7,4 @@ coverage>=6.3.2
 django-cors-headers>=3.11.0
 channels >=3.0.4
 channels-redis >= 3.4.0
+pillow>=9.1.0

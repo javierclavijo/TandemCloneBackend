@@ -8,6 +8,10 @@ from chats.models import AbstractChatMessage, AbstractChatMessageTranslation, Ab
 from common.models import AvailableLanguage, ProficiencyLevel
 
 
+def upload_to(instance, filename):
+    return f'channels/{instance.id}.{filename.split(".")[-1]}'
+
+
 class Channel(models.Model):
     def __str__(self):
         return self.name
@@ -26,6 +30,7 @@ class Channel(models.Model):
         max_length=2,
         choices=ProficiencyLevel.choices
     )
+    image = models.ImageField(upload_to=upload_to, blank=True)
 
 
 class ChannelRole(models.TextChoices):

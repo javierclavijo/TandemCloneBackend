@@ -1,4 +1,4 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, parsers
 
 from common.serializers import MembershipSerializer
 from communities.models import Channel, Membership
@@ -16,6 +16,7 @@ class ChannelViewSet(viewsets.ModelViewSet):
     queryset = Channel.objects.all()
     serializer_class = ChannelSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     # Disable PUT method, as it's not currently supported due to nested serializer fields
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
