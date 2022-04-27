@@ -79,6 +79,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
         return field_class, field_kwargs
 
+    image = serializers.ImageField(required=False)
+
     class Meta:
         model = get_user_model()
         fields = [
@@ -88,7 +90,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'description',
             'friends',
             'languages',
-            'memberships'
+            'memberships',
+            'image'
         ]
         depth = 2
 

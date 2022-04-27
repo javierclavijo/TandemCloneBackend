@@ -11,6 +11,10 @@ from chats.models import AbstractChatMessage, AbstractChatMessageTranslation
 from common.models import AvailableLanguage, ProficiencyLevel
 
 
+def upload_to(instance, filename):
+    return f'users/{instance.id}.{filename.split(".")[-1]}'
+
+
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     friends = models.ManyToManyField(
@@ -21,6 +25,7 @@ class CustomUser(AbstractUser):
         blank=True,
         max_length=2000,
     )
+    image = models.ImageField(upload_to=upload_to, blank=True)
 
 
 class UserLanguage(models.Model):
