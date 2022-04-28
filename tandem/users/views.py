@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 from common.models import AvailableLanguage, ProficiencyLevel
 from users.models import UserLanguage
@@ -207,13 +208,14 @@ class UserLanguageViewSet(viewsets.ModelViewSet):
     serializer_class = UserLanguageSerializer
 
 
-class ObtainAuthTokenAndId(ObtainAuthToken):
+class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
     """
-    Returns the user's auth token, plus their ID.
+    Returns the user's auth token, plus their ID and detail URL.
     Source: https://stackoverflow.com/a/44457513
     """
 
     def post(self, request, *args, **kwargs):
-        response = super(ObtainAuthTokenAndId, self).post(request, *args, *kwargs)
+        response = super(ObtainAuthTokenWithIdAndUrl, self).post(request, *args, *kwargs)
         token = Token.objects.get(key=response.data['token'])
-        return Response({'token': token.key, 'id': token.user_id})
+        url = request.build_absolute_uri(reverse('customuser-detail', kwargs={'pk': str(token.user.id)}))
+        return Response({'token': token.key, 'id': token.user_id, 'url': url})

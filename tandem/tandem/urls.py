@@ -8,7 +8,7 @@ from chats.views import FriendChatViewSet, FriendChatMessageViewSet, \
     ChannelChatMessageViewSet
 from communities.views import ChannelViewSet, MembershipViewSet
 from users import views
-from users.views import ObtainAuthTokenAndId
+from users.views import ObtainAuthTokenWithIdAndUrl
 
 """tandem URL Configuration
 
@@ -41,5 +41,5 @@ urlpatterns = [
                   path('', include(router.urls)),
                   path('admin/', admin.site.urls),
                   path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                  path('api-token-auth/', ObtainAuthTokenAndId.as_view()),
+                  path('api-token-auth/', ObtainAuthTokenWithIdAndUrl.as_view()),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
