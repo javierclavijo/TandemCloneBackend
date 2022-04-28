@@ -1,7 +1,9 @@
 import random
 from collections import OrderedDict
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
+from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError
 from django.utils.timezone import get_default_timezone
@@ -11,6 +13,17 @@ from chats.models import UserChatMessage, ChannelChatMessage, UserChat
 from common.models import AvailableLanguage, ProficiencyLevel
 from communities.models import Channel, Membership, ChannelRole
 from users.models import UserLanguage
+
+
+def save_random_image(instance):
+    # Get and save a random placeholder image for the user or channel
+    # Sources: https://stackoverflow.com/a/701430, https://stackoverflow.com/a/19037233
+    path = Path(__file__).parent.parent.parent / 'resources' / 'images'
+    random_file = random.choice(list(path.iterdir()))
+    with open(random_file, 'rb') as file:
+        image = File(file)
+        instance.image = image
+        instance.save()
 
 
 class Command(BaseCommand):
@@ -62,14 +75,18 @@ class Command(BaseCommand):
 
         for i in range(self.USER_COUNT):
             user_profile = fake.simple_profile()
+
             user = user_model.objects.create_user(
                 username=user_profile['username'],
                 email=user_profile['mail'],
                 password="password",
-                description=fake.paragraph(nb_sentences=5)
+                description=fake.paragraph(nb_sentences=5),
             )
             users.append(user)
             user.save()
+
+            # Get and save a random image
+            save_random_image(user)
 
         # Fetch the enums for languages and proficiency levels as lists
         languages = list(AvailableLanguage)
@@ -155,6 +172,7 @@ class Command(BaseCommand):
             )
             channels.append(channel)
             channel.save()
+            save_random_image(channel)
 
             self.stdout.write(self.style.SUCCESS(f'Successfully created channel "{channel.name}"'))
 
