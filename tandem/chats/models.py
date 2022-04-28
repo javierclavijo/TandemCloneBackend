@@ -29,7 +29,7 @@ class FriendChatMessage(AbstractChatMessage):
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="sent_user_chat_messages"
+        related_name="sent_friend_chat_messages"
     )
 
     class Meta:
@@ -41,7 +41,7 @@ class FriendChat(models.Model):
     users = models.ManyToManyField(
         to=settings.AUTH_USER_MODEL,
         blank=False,
-        related_name="chats"
+        related_name="friend_chats"
     )
 
 

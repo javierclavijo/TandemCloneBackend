@@ -29,8 +29,8 @@ class ChatConsumer(JsonWebsocketConsumer):
     def get_chat_ids(self, user):
         # Get user, then fetch list of the user's chat's IDs
         memberships = Membership.objects.filter(user=user).values_list('channel__id', flat=True)
-        user_chats = user.chats.all().values_list('pk', flat=True)
-        self.chat_ids = [str(x) for x in list(memberships) + list(user_chats)]
+        friend_chats = user.friend_chats.all().values_list('pk', flat=True)
+        self.chat_ids = [str(x) for x in list(memberships) + list(friend_chats)]
 
     def disconnect(self, close_code):
         for chat_id in self.chat_ids:

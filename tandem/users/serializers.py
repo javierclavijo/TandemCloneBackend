@@ -49,11 +49,25 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         Source: https://stackoverflow.com/a/50633184
         """
 
-        class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
+        class NestedFriendChatSerializer(serializers.HyperlinkedModelSerializer):
+            def build_nested_field(self, field_name_2, relation_info_2, nested_depth_2):
+                class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
+                    class Meta:
+                        model = relation_info_2.related_model
+                        depth = nested_depth_2 - 1
+                        fields = ['id', 'url', 'username', 'description', 'image']
+
+                if field_name_2 == 'users':
+                    field_class_2 = NestedUserSerializer
+
+                field_kwargs_2 = get_nested_relation_kwargs(relation_info_2)
+
+                return field_class_2, field_kwargs_2
+
             class Meta:
                 model = relation_info.related_model
                 depth = nested_depth - 1
-                fields = ['id', 'url', 'username', 'description', 'image']
+                fields = ['id', 'url', 'users']
 
         class NestedChannelSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
@@ -69,10 +83,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 depth = nested_depth - 1
                 fields = ['id', 'url', 'channel', 'role']
 
-        field_class = NestedUserSerializer
-        # # TODO: change 'friends' for friend_chats
-        # if field_name == 'friends':
-        #     field_class = NestedUserSerializer
+        if field_name == 'friend_chats':
+            field_class = NestedFriendChatSerializer
         if field_name == 'memberships':
             field_class = NestedMembershipSerializer
 
@@ -89,7 +101,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'url',
             'username',
             'description',
-            # 'friends',
+            'friend_chats',
             'languages',
             'memberships',
             'image'

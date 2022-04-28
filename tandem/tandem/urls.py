@@ -31,8 +31,8 @@ router.register(r'users', views.UserViewSet)
 router.register(r'user_languages', views.UserLanguageViewSet)
 router.register(r'channels', ChannelViewSet, basename='channel')
 router.register(r'memberships', MembershipViewSet)
-router.register(r'user_chats', FriendChatViewSet)
-router.register(r'user_chat_messages', FriendChatMessageViewSet)
+router.register(r'friend_chats', FriendChatViewSet)
+router.register(r'friend_chat_messages', FriendChatMessageViewSet)
 router.register(r'channel_chat_messages', ChannelChatMessageViewSet)
 
 # Wire up our API using automatic URL routing.

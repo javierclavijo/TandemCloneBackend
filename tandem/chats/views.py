@@ -17,7 +17,7 @@ class FriendChatViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_staff:
             return FriendChat.objects.all()
-        return self.request.user.chats.all()
+        return self.request.user.friend_chats.all()
 
     queryset = FriendChat.objects.all()
     serializer_class = FriendChatSerializer
