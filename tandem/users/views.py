@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import permissions, status, parsers
 from rest_framework import viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -203,3 +205,15 @@ class UserLanguageViewSet(viewsets.ModelViewSet):
 
     queryset = UserLanguage.objects.all()
     serializer_class = UserLanguageSerializer
+
+
+class ObtainAuthTokenAndId(ObtainAuthToken):
+    """
+    Returns the user's auth token, plus their ID.
+    Source: https://stackoverflow.com/a/44457513
+    """
+
+    def post(self, request, *args, **kwargs):
+        response = super(ObtainAuthTokenAndId, self).post(request, *args, *kwargs)
+        token = Token.objects.get(key=response.data['token'])
+        return Response({'token': token.key, 'id': token.user_id})
