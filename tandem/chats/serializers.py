@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
-from chats.models import UserChat, UserChatMessage, ChannelChatMessage
+from chats.models import FriendChat, FriendChatMessage, ChannelChatMessage
 
 
 class ChatMessageAuthorSerializer(serializers.HyperlinkedModelSerializer):
@@ -16,11 +16,11 @@ class ChatMessageAuthorSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class UserChatMessageSerializer(serializers.HyperlinkedModelSerializer):
+class FriendChatMessageSerializer(serializers.HyperlinkedModelSerializer):
     author = ChatMessageAuthorSerializer(read_only=True)
 
     class Meta:
-        model = UserChatMessage
+        model = FriendChatMessage
         fields = [
             'id',
             'url',
@@ -31,19 +31,19 @@ class UserChatMessageSerializer(serializers.HyperlinkedModelSerializer):
         ]
 
 
-class UserChatSerializer(serializers.HyperlinkedModelSerializer):
+class FriendChatSerializer(serializers.HyperlinkedModelSerializer):
     messages = serializers.SerializerMethodField(method_name='get_messages')
 
     def to_representation(self, instance):
-        ret = super(UserChatSerializer, self).to_representation(instance)
+        ret = super(FriendChatSerializer, self).to_representation(instance)
         ret['messageUrl'] = self.context['request'].build_absolute_uri(
-            str(reverse('userchatmessage-list')) + '?chat=' + str(instance.id))
+            str(reverse('friendchatmessage-list')) + '?chat=' + str(instance.id))
         return ret
 
     def get_messages(self, instance):
         queryset = instance.messages.order_by('-timestamp')[:1]
-        return UserChatMessageSerializer(queryset, many=True, read_only=True,
-                                         context={'request': self.context['request']}).data
+        return FriendChatMessageSerializer(queryset, many=True, read_only=True,
+                                           context={'request': self.context['request']}).data
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
         """
@@ -65,7 +65,7 @@ class UserChatSerializer(serializers.HyperlinkedModelSerializer):
         return field_class, field_kwargs
 
     class Meta:
-        model = UserChat
+        model = FriendChat
         fields = [
             'id',
             'url',

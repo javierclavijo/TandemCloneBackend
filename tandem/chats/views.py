@@ -1,41 +1,40 @@
 from rest_framework import permissions, viewsets
 
-from chats.models import UserChat, UserChatMessage, ChannelChatMessage
-from chats.serializers import UserChatSerializer, ChannelChatMessageSerializer, \
-    UserChatMessageSerializer
+from chats.models import FriendChat, FriendChatMessage, ChannelChatMessage
+from chats.serializers import FriendChatSerializer, ChannelChatMessageSerializer, \
+    FriendChatMessageSerializer
 
 
-class UserChatViewSet(viewsets.ModelViewSet):
+class FriendChatViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to view chats, send messages and edit them, etc.
     Restricts data to the request's user's chats, unless they are staff.
     """
 
     class Meta:
-        model = UserChat
+        model = FriendChat
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return UserChat.objects.all()
+            return FriendChat.objects.all()
         return self.request.user.chats.all()
 
-    queryset = UserChat.objects.all()
-    serializer_class = UserChatSerializer
+    queryset = FriendChat.objects.all()
+    serializer_class = FriendChatSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ('users',)
 
 
-
-class UserChatMessageViewSet(viewsets.ModelViewSet):
+class FriendChatMessageViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to view user chat messages, etc.
     """
 
     class Meta:
-        model = UserChatMessage
+        model = FriendChatMessage
 
-    queryset = UserChatMessage.objects.all()
-    serializer_class = UserChatMessageSerializer
+    queryset = FriendChatMessage.objects.all()
+    serializer_class = FriendChatMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ('chat',)
 

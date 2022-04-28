@@ -70,8 +70,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 fields = ['id', 'url', 'channel', 'role']
 
         field_class = NestedUserSerializer
-        if field_name == 'friends':
-            field_class = NestedUserSerializer
+        # # TODO: change 'friends' for friend_chats
+        # if field_name == 'friends':
+        #     field_class = NestedUserSerializer
         if field_name == 'memberships':
             field_class = NestedMembershipSerializer
 
@@ -88,7 +89,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'url',
             'username',
             'description',
-            'friends',
+            # 'friends',
             'languages',
             'memberships',
             'image'

@@ -3,7 +3,7 @@ from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 
-from chats.models import UserChat, ChannelChatMessage, UserChatMessage
+from chats.models import FriendChat, ChannelChatMessage, FriendChatMessage
 from communities.models import Membership, Channel
 
 
@@ -62,13 +62,13 @@ class ChatConsumer(JsonWebsocketConsumer):
                 message_object.save()
 
             elif chat_type == "users":
-                chat = UserChat.objects.get(id=chat_id)
+                chat = FriendChat.objects.get(id=chat_id)
 
                 # Check that the user has permission to post in the chat (same as above)
                 if user not in chat.users.all():
                     raise PermissionDenied("User is not allowed to post messages to this chat.")
 
-                message_object = UserChatMessage(
+                message_object = FriendChatMessage(
                     content=message_content,
                     author=user,
                     chat=chat
@@ -90,7 +90,7 @@ class ChatConsumer(JsonWebsocketConsumer):
                 'content': message_content,
                 'timestamp': message_object.timestamp.isoformat(),
             }
-        except (KeyError, ValueError, Channel.DoesNotExist, UserChat.DoesNotExist, PermissionDenied) as e:
+        except (KeyError, ValueError, Channel.DoesNotExist, FriendChat.DoesNotExist, PermissionDenied) as e:
             # If the message does not have the required attributes or the provided ID is not found, close the
             # connection.
             # TODO: log error

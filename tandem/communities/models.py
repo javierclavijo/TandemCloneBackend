@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from chats.models import AbstractChatMessage, AbstractChatMessageTranslation, AbstractChatMessageCorrection
+from chats.models import AbstractChatMessage
 from common.models import AvailableLanguage, ProficiencyLevel
 
 

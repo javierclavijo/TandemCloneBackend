@@ -184,44 +184,6 @@ class UserCrudTests(APITestCase):
         response = self.client.patch(url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_set_friends_succeeds_with_appropriate_data(self):
-        """
-        Checks whether friend list update is successful.
-        """
-        friend_ids = [3, 5, 7, 13]
-        data = {"friends": []}
-        user_id = 2
-
-        for friend_id in friend_ids:
-            friend_url = reverse("customuser-detail", kwargs={"pk": friend_id})
-            data['friends'].append(friend_url)
-
-        # We need to use a request factory to pass the request to the serializer
-        factory = APIRequestFactory()
-        url = reverse("customuser-set-friends", kwargs={"pk": user_id})
-        view = UserViewSet.as_view({'patch': 'set_friends'})
-        request = factory.patch(url, data=data, format="json")
-        force_authenticate(request, user=self.user)
-        response = view(request=request, pk=user_id)
-
-        serializer = UserSerializer(
-            instance=self.user_model.objects.get(pk=user_id),
-            context={'request': request}
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['friends'], serializer.data['friends'])
-
-    def test_set_friends_fails_if_no_friends_are_sent(self):
-        """
-        Checks whether friend list update fails and returns the appropriate status code if no 'friends' key is
-        included in the request.
-        """
-        data = {"invalid_key": []}
-        url = reverse("customuser-set-friends", kwargs={"pk": 2})
-        response = self.client.patch(url, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_set_languages_succeeds_with_appropriate_data(self):
         """
         Checks whether language list update is successful. Coverage for this test depends on the user's extant

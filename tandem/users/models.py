@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 
-from chats.models import AbstractChatMessage, AbstractChatMessageTranslation
+from chats.models import AbstractChatMessage
 from common.models import AvailableLanguage, ProficiencyLevel
 
 
@@ -17,10 +17,6 @@ def upload_to(instance, filename):
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    friends = models.ManyToManyField(
-        to="self",
-        blank=True
-    )
     description = models.TextField(
         blank=True,
         max_length=2000,

@@ -9,7 +9,7 @@ from django.db import IntegrityError
 from django.utils.timezone import get_default_timezone
 from faker import Faker
 
-from chats.models import UserChatMessage, ChannelChatMessage, UserChat
+from chats.models import FriendChatMessage, ChannelChatMessage, FriendChat
 from common.models import AvailableLanguage, ProficiencyLevel
 from communities.models import Channel, Membership, ChannelRole
 from users.models import UserLanguage
@@ -104,10 +104,34 @@ class Command(BaseCommand):
             # Exclude the user from the list of potential friends to avoid saving themselves as their own friend
             potential_friends.remove(user)
             friends = random.sample(potential_friends, k=3)
+
+            # Create user chats and messages A number of messages is created randomly for each friend. This must be
+            # kept in a separate loop, as friends are added on user creation --thus, no messages would be created
+            # from a user to a friend that is created later and adds them.
             for friend in friends:
-                user.friends.add(friend)
-            user.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully created user "{user}"'))
+                chat = None
+                try:
+                    # Check if a chat exists for the two users, and create it if it doesn't
+                    chat = FriendChat.objects.filter(users=user).get(users=friend)
+
+                except FriendChat.DoesNotExist:
+                    chat = FriendChat()
+                    chat.save()
+                    chat.users.add(friend)
+                    chat.users.add(user)
+                    chat.save()
+
+                finally:
+                    for i in range(10):
+                        message = FriendChatMessage(
+                            author=user,
+                            content=fake.sentence(nb_words=20),
+                            timestamp=fake.date_time_this_month(tzinfo=get_default_timezone()),
+                            chat=chat
+                        )
+                        message.save()
+
+            self.stdout.write(self.style.SUCCESS(f'Successfully added messages to user "{user}"'))
 
             # Add a native language to each user
             available_languages = languages.copy()
@@ -130,35 +154,6 @@ class Command(BaseCommand):
             foreign_language_object.save()
 
             self.stdout.write(self.style.SUCCESS(f'Successfully added languages to user "{user}"'))
-
-        # Create user chats and messages
-        # A number of messages is created randomly for each friend. This must be kept in a separate loop, as friends are
-        # added on user creation --thus, no messages would be created from a user to a friend that is created later and
-        # adds them.
-        for user in users:
-            for friend in user.friends.all():
-                chat = None
-                try:
-                    # Check if a chat exists for the two users, and create it if it doesn't
-                    chat = UserChat.objects.filter(users=user).get(users=friend)
-
-                except UserChat.DoesNotExist:
-                    chat = UserChat()
-                    chat.save()
-                    chat.users.add(friend)
-                    chat.users.add(user)
-                    chat.save()
-
-                finally:
-                    for i in range(10):
-                        message = UserChatMessage(
-                            author=user,
-                            content=fake.sentence(nb_words=20),
-                            timestamp=fake.date_time_this_month(tzinfo=get_default_timezone()),
-                            chat=chat
-                        )
-                        message.save()
-            self.stdout.write(self.style.SUCCESS(f'Successfully added messages to user "{user}"'))
 
         # Create channel
         # A channel is created for each available language, with an Intermediate language level

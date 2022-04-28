@@ -5,7 +5,7 @@ from django.urls import include, path
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
-from chats.views import UserChatViewSet, UserChatMessageViewSet, \
+from chats.views import FriendChatViewSet, FriendChatMessageViewSet, \
     ChannelChatMessageViewSet
 from communities.views import ChannelViewSet, MembershipViewSet
 from users import views
@@ -31,8 +31,8 @@ router.register(r'users', views.UserViewSet)
 router.register(r'user_languages', views.UserLanguageViewSet)
 router.register(r'channels', ChannelViewSet, basename='channel')
 router.register(r'memberships', MembershipViewSet)
-router.register(r'user_chats', UserChatViewSet)
-router.register(r'user_chat_messages', UserChatMessageViewSet)
+router.register(r'user_chats', FriendChatViewSet)
+router.register(r'user_chat_messages', FriendChatMessageViewSet)
 router.register(r'channel_chat_messages', ChannelChatMessageViewSet)
 
 # Wire up our API using automatic URL routing.
