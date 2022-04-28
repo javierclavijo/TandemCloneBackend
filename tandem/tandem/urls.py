@@ -5,7 +5,7 @@ from django.urls import include, path
 from rest_framework import routers
 from rest_framework.authtoken.views import obtain_auth_token
 
-from chats.views import UserChatViewSet, ChannelChatViewSet, ChatListView, UserChatMessageViewSet, \
+from chats.views import UserChatViewSet, UserChatMessageViewSet, \
     ChannelChatMessageViewSet
 from communities.views import ChannelViewSet, MembershipViewSet
 from users import views
@@ -32,7 +32,6 @@ router.register(r'user_languages', views.UserLanguageViewSet)
 router.register(r'channels', ChannelViewSet, basename='channel')
 router.register(r'memberships', MembershipViewSet)
 router.register(r'user_chats', UserChatViewSet)
-router.register(r'channel_chats', ChannelChatViewSet, basename='channelchat')
 router.register(r'user_chat_messages', UserChatMessageViewSet)
 router.register(r'channel_chat_messages', ChannelChatMessageViewSet)
 
@@ -43,5 +42,4 @@ urlpatterns = [
                   path('admin/', admin.site.urls),
                   path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
                   path('api-token-auth/', obtain_auth_token),
-                  path('chat-list/', ChatListView.as_view())
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

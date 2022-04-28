@@ -64,7 +64,7 @@ class UserChatMessage(AbstractChatMessage):
     )
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ['-timestamp']
 
 
 class UserChat(models.Model):
@@ -116,7 +116,7 @@ class ChannelChatMessage(AbstractChatMessage):
     )
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ['-timestamp']
 
 
 class ChannelChatMessageTranslation(AbstractChatMessageTranslation):

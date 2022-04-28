@@ -1,14 +1,22 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 
-from communities.models import Channel
+from chats.serializers import ChannelChatMessageSerializer
+from communities.models import Channel, Membership
 
 
 class ChannelSerializer(serializers.HyperlinkedModelSerializer):
     """
     Channel serializer class.
     """
+
+    def to_representation(self, instance):
+        ret = super(ChannelSerializer, self).to_representation(instance)
+        ret['messageUrl'] = self.context['request'].build_absolute_uri(
+            str(reverse('channelchatmessage-list')) + '?channel=' + str(instance.id))
+        return ret
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
         """
@@ -37,7 +45,19 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
 
         return field_class, field_kwargs
 
+    messages = serializers.SerializerMethodField(method_name='get_messages')
     image = serializers.ImageField(required=False)
+
+    def get_messages(self, instance):
+        # If the user is admin or a member of the channel, get only the latest message for the channel. Else, return an
+        # empty queryset.
+        user = self.context['request'].user
+        if user.is_staff or Membership.objects.filter(user=user, channel=instance).exists():
+            queryset = instance.messages.order_by('-timestamp')[:1]
+        else:
+            queryset = instance.messages.none()
+        return ChannelChatMessageSerializer(queryset, many=True, read_only=True,
+                                            context={'request': self.context['request']}).data
 
     class Meta:
         model = Channel
@@ -50,5 +70,6 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
             'level',
             'memberships',
             'image',
+            'messages'
         ]
         depth = 2
