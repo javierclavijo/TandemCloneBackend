@@ -55,7 +55,7 @@ class UserChatSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
                 model = get_user_model()
                 depth = nested_depth - 1
-                fields = ['id', 'url', 'username']
+                fields = ['id', 'url', 'username', 'image']
 
         if field_name == 'users':
             field_class = NestedUserSerializer

@@ -28,7 +28,7 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
                 model = get_user_model()
                 depth = nested_depth - 1
-                fields = ['id', 'url', 'username', 'description']
+                fields = ['id', 'url', 'username', 'description', 'image']
 
         class NestedMembershipSerializer(serializers.HyperlinkedModelSerializer):
             user = NestedUserSerializer(read_only=True)

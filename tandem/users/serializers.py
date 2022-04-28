@@ -53,13 +53,13 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
                 model = relation_info.related_model
                 depth = nested_depth - 1
-                fields = ['id', 'url', 'username', 'description']
+                fields = ['id', 'url', 'username', 'description', 'image']
 
         class NestedChannelSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
                 model = Channel
                 depth = nested_depth - 2
-                fields = ['id', 'url', 'name', 'description', 'language', 'level']
+                fields = ['id', 'url', 'name', 'description', 'language', 'level', 'image']
 
         class NestedMembershipSerializer(serializers.HyperlinkedModelSerializer):
             channel = NestedChannelSerializer(read_only=True)

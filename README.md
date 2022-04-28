@@ -1,7 +1,7 @@
-# TandemCloneBackend
+# tandem-backend
 
-Back end for clone of Tandem web app written in Django REST Framework. Developed as final project for web development
-degree.
+Back end for language exchange chat app (similar to Tandem) written in Django REST Framework. Developed as final project
+for web development degree.
 
 ## Deployment (Development)
 
