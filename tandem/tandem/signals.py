@@ -13,6 +13,7 @@ def optimize_image(sender, instance, **kwargs):
     Resizes an image and applies compression to it to lower its size.
     Sources: https://stackoverflow.com/a/13211834, https://stackoverflow.com/a/70686579
     """
-    with Image.open(instance.image.path) as image:
-        image.thumbnail((400, 400), Image.LANCZOS)
-        image.save(instance.image.path, optimize=True, quality=85)
+    if instance.image:
+        with Image.open(instance.image.path) as image:
+            image.thumbnail((400, 400), Image.LANCZOS)
+            image.save(instance.image.path, optimize=True, quality=85)
