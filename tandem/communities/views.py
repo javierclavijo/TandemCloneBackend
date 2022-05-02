@@ -22,6 +22,19 @@ class ChannelViewSet(viewsets.ModelViewSet):
     # Disable PUT method, as it's not currently supported due to nested serializer fields
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
 
+    def create(self, request, *args, **kwargs):
+        """ After creating a channel, creates a membership for it with the request's user and 'Admin' role. """
+        response = super(ChannelViewSet, self).create(request, *args, **kwargs)
+        membership = Membership(
+            user=request.user,
+            channel_id=response.data['id'],
+            role='A'
+        )
+        membership.save()
+        serialized_membership = MembershipSerializer(membership, context={'request': request})
+        response.data['memberships'].append(serialized_membership.data)
+        return response
+
     def get_queryset(self):
         """
         Optionally restricts the returned channels, by filtering against `name`, `language` and `levels`
