@@ -1,5 +1,7 @@
 from rest_framework import viewsets, permissions, parsers
 
+from chats.models import ChannelChatMessage
+from chats.serializers import ChannelChatMessageSerializer
 from common.serializers import MembershipSerializer
 from communities.models import Channel, Membership
 from communities.serializers import ChannelSerializer
@@ -25,14 +27,25 @@ class ChannelViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """ After creating a channel, creates a membership for it with the request's user and 'Admin' role. """
         response = super(ChannelViewSet, self).create(request, *args, **kwargs)
+        channel_id = response.data['id']
+
         membership = Membership(
             user=request.user,
-            channel_id=response.data['id'],
+            channel_id=channel_id,
             role='A'
         )
         membership.save()
         serialized_membership = MembershipSerializer(membership, context={'request': request})
         response.data['memberships'].append(serialized_membership.data)
+
+        message = ChannelChatMessage(
+            author=request.user,
+            channel_id=channel_id,
+            content='Created channel'
+        )
+        message.save()
+        serialized_message = ChannelChatMessageSerializer(message, context={'request': request})
+        response.data['messages'].append(serialized_message.data)
         return response
 
     def get_queryset(self):
