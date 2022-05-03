@@ -4,6 +4,11 @@ from rest_framework.response import Response
 
 
 class CustomPagination(PageNumberPagination):
+    """ Adds 'nextPageNumber' and 'previousPageNumber' attributes in the response. Enables the page size query param
+    to allow the client to control the number of records fetched. """
+
+    page_size_query_param = 'size'
+
     def get_paginated_response(self, data):
         response = super(CustomPagination, self).get_paginated_response(data)
         try:
