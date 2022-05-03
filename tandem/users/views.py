@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django_filters import rest_framework as filters
 from rest_framework import permissions, status, parsers
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from common.models import AvailableLanguage, ProficiencyLevel
+from users.filters import UserFilter
 from users.models import UserLanguage
 from users.serializers import UserSerializer, UserLanguageSerializer, UserPasswordUpdateSerializer
 
@@ -24,6 +26,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
+    filterset_class = UserFilter
 
     # Disable PUT method, as it's not currently supported due to nested serializer fields
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
