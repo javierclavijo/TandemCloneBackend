@@ -48,27 +48,6 @@ class ChannelViewSet(viewsets.ModelViewSet):
         response.data['messages'].append(serialized_message.data)
         return response
 
-    def get_queryset(self):
-        """
-        Optionally restricts the returned channels, by filtering against `name`, `language` and `levels`
-        query parameters in the URL.
-        """
-        queryset = Channel.objects.all()
-        name = self.request.query_params.get('name')
-        language = self.request.query_params.get('language')
-        levels = self.request.query_params.get('levels')
-
-        if name is not None:
-            queryset = queryset.filter(name__icontains=name)
-
-        if language is not None:
-            queryset = queryset.filter(language=language)
-
-        if levels is not None:
-            queryset = queryset.filter(level__in=levels)
-
-        return queryset
-
 
 class MembershipViewSet(viewsets.ModelViewSet):
     """
