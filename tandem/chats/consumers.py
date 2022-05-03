@@ -98,18 +98,28 @@ class ChatConsumer(JsonWebsocketConsumer):
 
     # Receive message from WebSocket client, fetch the chat's ID and send it to the respective group
     def receive_json(self, content):
-        # Persist message to DB
-        chat_id = content['chat_id']
-        saved_message = self.save_message(content)
+        try:
+            message_type = content['type']
+            chat_id = content['chat_id']
 
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            chat_id,
-            {
-                'type': 'chat_message',
-                'message': saved_message
-            }
-        )
+            if message_type == 'chat_message':
+                # Persist message to DB
+                saved_message = self.save_message(content)
+
+                # Send message to room group
+                async_to_sync(self.channel_layer.group_send)(
+                    chat_id,
+                    {
+                        'type': 'chat_message',
+                        'message': saved_message
+                    }
+                )
+            elif message_type == 'join_chat':
+                # Join the group with the provided ID
+                self.chat_join(chat_id)
+
+        except KeyError:
+            pass
 
     # Receive message from room group, forward it to the client
     def chat_message(self, event):
@@ -119,5 +129,12 @@ class ChatConsumer(JsonWebsocketConsumer):
         self.send_json({
             'message': message
         })
+
+    # Add the consumer to a group after the user joins a channel or creates a user chat
+    def chat_join(self, chat_id):
+        async_to_sync(self.channel_layer.group_add)(
+            chat_id,
+            self.channel_name
+        )
 
 # Code initially sourced from https://channels.readthedocs.io/en/stable/tutorial/part_2.html
