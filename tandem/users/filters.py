@@ -47,11 +47,12 @@ class UserFilter(filters.FilterSet):
         try:
             # If a proficiency level is specified, verify that it's a valid level and filter the UserLanguage subquery
             # by it.
-            level = self.data['level']
-            if level not in ProficiencyLevel.values:
-                raise ValidationError({'level': [f'{level} is not a valid choice.']})
+            levels = self.request.GET.getlist('level')
+            for x in levels:
+                if x not in ProficiencyLevel.values:
+                    raise ValidationError({'level': [f'{x} is not a valid choice.']})
 
-            subquery = subquery.filter(level=level)
+            subquery = subquery.filter(level__in=levels)
         except KeyError:
             pass
 
