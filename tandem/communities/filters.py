@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django_filters import rest_framework as filters
 
+from common.models import AvailableLanguage, ProficiencyLevel
 from communities.models import Channel
 
 
@@ -10,6 +11,8 @@ class ChannelFilter(filters.FilterSet):
     which contains the search term.
     """
     search = filters.CharFilter(method='get_search')
+    language = filters.MultipleChoiceFilter(field_name='language', choices=AvailableLanguage.choices)
+    level = filters.MultipleChoiceFilter(field_name='level', choices=ProficiencyLevel.choices)
 
     def get_search(self, queryset, name, value):
         return queryset.filter(
