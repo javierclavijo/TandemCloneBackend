@@ -44,12 +44,21 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     """
 
     def to_representation(self, instance):
-        """ Delete the email field from the instance's representation. """
+        """ Delete the email and password fields from the instance's representation. """
         ret = super(UserSerializer, self).to_representation(instance)
         del ret['email']
+        del ret['password']
         return ret
 
-    languages = UserLanguageSerializer(many=True, read_only=True)
+    def create(self, validated_data):
+        """
+        Hashes the user's password on creation.
+        Source: https://stackoverflow.com/a/42411533
+        """
+        user = super().create(validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
         """
@@ -100,6 +109,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
         return field_class, field_kwargs
 
+    languages = UserLanguageSerializer(many=True, read_only=True)
     image = serializers.ImageField(required=False)
     email = serializers.EmailField(required=True, validators=[UniqueValidator(
         queryset=get_user_model().objects.all(),
@@ -117,7 +127,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'languages',
             'memberships',
             'image',
-            'email'
+            'email',
+            'password',
         ]
         depth = 2
 
