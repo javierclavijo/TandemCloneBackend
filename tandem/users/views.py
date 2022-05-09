@@ -51,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user_object = get_user_model().objects.get(id=user_id)
 
         try:
-            native_languages = request.data["native_languages"]
+            native_languages = request.data["nativeLanguages"]
             if not isinstance(native_languages, list):
                 raise ValueError('This field must be a list value.')
 
@@ -76,12 +76,12 @@ class UserViewSet(viewsets.ModelViewSet):
         except KeyError:
             """Rollback the transaction if the native_languages attribute wasn't provided. """
             transaction.set_rollback(True)
-            return Response({'native_languages': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'nativeLanguages': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             """Rollback the transaction if native_languages doesn't have the correct format or any of the provided 
             languages is not a valid choice. """
             transaction.set_rollback(True)
-            return Response({'native_languages': [str(e)]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'nativeLanguages': [str(e)]}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['patch'])
     def set_password(self, request, *args, **kwargs):

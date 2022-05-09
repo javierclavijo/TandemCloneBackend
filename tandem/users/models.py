@@ -18,7 +18,7 @@ def upload_to(instance, filename):
 
 class CustomUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(_('email address'), blank=False)
+    email = models.EmailField(_('email address'), blank=False, unique=True)
     description = models.TextField(
         blank=True,
         max_length=2000,

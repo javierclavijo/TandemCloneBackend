@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
+from rest_framework.validators import UniqueValidator
 
 from common.serializers import MembershipSerializer
 from communities.models import Membership, Channel
@@ -41,6 +42,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     User serializer class. Does not include messages and other models, nor the user's password. Related fields are
     set to be read only to avoid unwanted updates, as they should be done through custom controllers (views).
     """
+
     def to_representation(self, instance):
         """ Delete the email field from the instance's representation. """
         ret = super(UserSerializer, self).to_representation(instance)
@@ -99,7 +101,10 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return field_class, field_kwargs
 
     image = serializers.ImageField(required=False)
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(required=True, validators=[UniqueValidator(
+        queryset=get_user_model().objects.all(),
+        message="A user with that email already exists."
+    )])
 
     class Meta:
         model = get_user_model()
