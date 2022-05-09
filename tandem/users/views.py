@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django_filters import rest_framework as filters
 from rest_framework import permissions, status, parsers
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
@@ -9,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from common.models import AvailableLanguage, ProficiencyLevel
+from common.models import ProficiencyLevel, AvailableLanguage
 from users.filters import UserFilter
 from users.models import UserLanguage
 from users.serializers import UserSerializer, UserLanguageSerializer, UserPasswordUpdateSerializer
@@ -47,25 +46,38 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Creates a user and its associated language objects
         """
-        data = request.data
-        user_object = self.Meta.model.objects.create_user(
-            username=data["username"],
-            email=data["email"],
-            password=data["password"],
-            is_staff=False
-        )
-        user_object.save()
+        response = super(UserViewSet, self).create(request, *args, **kwargs)
+        user_id = response.data['id']
+        user_object = get_user_model().objects.get(id=user_id)
 
-        for user_language in data["languages"]:
-            UserLanguage.objects.create(
-                user=user_object,
-                language=dict(AvailableLanguage.choices)[user_language['language']],
-                level=dict(ProficiencyLevel.choices)[user_language['level']]
-            )
+        try:
+            native_languages = request.data["native_languages"]
+            if not isinstance(native_languages, list):
+                raise ValueError('This field must be a list value.')
 
-        serializer = self.get_serializer(user_object)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            for language in native_languages:
+                if language not in AvailableLanguage.values:
+                    raise ValueError(f"'{language}' is not a valid choice.")
+                language_object = UserLanguage.objects.create(
+                    user=user_object,
+                    language=language,
+                    level=ProficiencyLevel.NATIVE
+                )
+                language_object.save()
+
+            serializer = self.get_serializer(user_object)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        except KeyError:
+            """Rollback the transaction if the native_languages attribute wasn't provided. """
+            transaction.set_rollback(True)
+            return Response({'native_languages': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            """Rollback the transaction if native_languages doesn't have the correct format or any of the provided 
+            languages is not a valid choice. """
+            transaction.set_rollback(True)
+            return Response({'native_languages': [str(e)]}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['patch'])
     def set_password(self, request, *args, **kwargs):

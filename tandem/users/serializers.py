@@ -41,6 +41,12 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     User serializer class. Does not include messages and other models, nor the user's password. Related fields are
     set to be read only to avoid unwanted updates, as they should be done through custom controllers (views).
     """
+    def to_representation(self, instance):
+        """ Delete the email field from the instance's representation. """
+        ret = super(UserSerializer, self).to_representation(instance)
+        del ret['email']
+        return ret
+
     languages = UserLanguageSerializer(many=True, read_only=True)
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
@@ -93,6 +99,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return field_class, field_kwargs
 
     image = serializers.ImageField(required=False)
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = get_user_model()
@@ -104,7 +111,8 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             'friend_chats',
             'languages',
             'memberships',
-            'image'
+            'image',
+            'email'
         ]
         depth = 2
 
