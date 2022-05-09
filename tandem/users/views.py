@@ -55,6 +55,10 @@ class UserViewSet(viewsets.ModelViewSet):
             if not isinstance(native_languages, list):
                 raise ValueError('This field must be a list value.')
 
+            if not len(native_languages):
+                raise ValueError(
+                    f'This field must include at least one of the following choices: {AvailableLanguage.values}.')
+
             for language in native_languages:
                 if language not in AvailableLanguage.values:
                     raise ValueError(f"'{language}' is not a valid choice.")
