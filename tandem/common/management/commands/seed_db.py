@@ -46,7 +46,6 @@ class Command(BaseCommand):
             ('fr_FR', 4),
             ('it_IT', 5)
         ]))
-        Faker.seed(random.randint(0, 1000))
         user_model = get_user_model()
 
         # Create and save admin user. If it already exists, skip it.
@@ -64,14 +63,18 @@ class Command(BaseCommand):
 
         # Create and save a list of users. First, create a test user.
         users = []
-        user = user_model.objects.create_user(
-            username='test_user',
-            email='test_user@example.com',
-            password="password",
-            description=fake.paragraph(nb_sentences=5)
-        )
-        users.append(user)
-        user.save()
+
+        try:
+            user = user_model.objects.create_user(
+                username='test_user',
+                email='test_user@example.com',
+                password="password",
+                description=fake.paragraph(nb_sentences=5)
+            )
+            users.append(user)
+            user.save()
+        except IntegrityError:
+            self.stdout.write(self.style.WARNING('Skipping creation of test user, as it already exists.'))
 
         for i in range(self.USER_COUNT):
             user_profile = fake.simple_profile()
@@ -163,17 +166,20 @@ class Command(BaseCommand):
         # A channel is created for each available language, with an Intermediate language level
         channels = []
         for language in languages:
-            channel = Channel(
-                name=fake.slug(),
-                description=fake.paragraph(nb_sentences=5),
-                language=language,
-                level=proficiency_levels[1]
-            )
-            channels.append(channel)
-            channel.save()
-            save_random_image(channel)
+            try:
+                channel = Channel(
+                    name=fake.slug(),
+                    description=fake.paragraph(nb_sentences=5),
+                    language=language,
+                    level=proficiency_levels[1]
+                )
+                channels.append(channel)
+                channel.save()
+                save_random_image(channel)
 
-            self.stdout.write(self.style.SUCCESS(f'Successfully created channel "{channel.name}"'))
+                self.stdout.write(self.style.SUCCESS(f'Successfully created channel "{channel.name}"'))
+            except IntegrityError as e:
+                self.stdout.write(self.style.WARNING(f"Skipping creation of channel: {str(e)}."))
 
         # Create channel memberships and messages for all users
         # Each user is subscribed to the channels of the foreign languages that they speak and assigned a random role
