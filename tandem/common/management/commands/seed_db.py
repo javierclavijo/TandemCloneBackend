@@ -76,17 +76,21 @@ class Command(BaseCommand):
         for i in range(self.USER_COUNT):
             user_profile = fake.simple_profile()
 
-            user = user_model.objects.create_user(
-                username=user_profile['username'],
-                email=user_profile['mail'],
-                password="password",
-                description=fake.paragraph(nb_sentences=5),
-            )
-            users.append(user)
-            user.save()
+            try:
+                user = user_model.objects.create_user(
+                    username=user_profile['username'],
+                    email=user_profile['mail'],
+                    password="password",
+                    description=fake.paragraph(nb_sentences=5),
+                )
+                users.append(user)
+                user.save()
 
-            # Get and save a random image
-            save_random_image(user)
+                # Get and save a random image
+                save_random_image(user)
+            except IntegrityError as e:
+                self.stdout.write(
+                    self.style.WARNING(f"Skipping creation of user '{user_profile['username']}': {str(e)}."))
 
         # Fetch the enums for languages and proficiency levels as lists
         languages = list(AvailableLanguage)
