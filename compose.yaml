@@ -3,28 +3,39 @@ version: "3.9"
 services:
   db:
     image: postgres
+    expose:
+      - "5432"
     volumes:
       - db-volume:/var/lib/postgresql/data\
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+  redis:
+    image: redis:6
+    expose:
+      - "6379"
+    volumes:
+      - redis-volume:/data
   api:
     build: .
-    command: wait-for-it db:5432 -- python /code/manage.py runserver 0.0.0.0:8000
+    command: sh -c "/wait && python /code/manage.py runserver 0.0.0.0:8000"
     volumes:
       - api-volume:/code
     ports:
       - "8000:8000"
     environment:
+      - WAIT_HOSTS=db:5432, redis:6379
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     depends_on:
       - db
+      - redis
 
 volumes:
   db-volume:
   api-volume:
+  redis-volume:
 
 # Source: https://docs.docker.com/samples/django/
