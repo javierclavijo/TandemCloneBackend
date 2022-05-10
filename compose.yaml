@@ -4,15 +4,14 @@ services:
   db:
     image: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./data/db:/var/lib/postgresql/data\
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   api:
     build: .
-    command: wait-for-it db:5432 -- sh -c  'python /code/manage.py migrate &&
-                                            python /code/manage.py runserver 0.0.0.0:8000'
+    command: wait-for-it db:5432 -- python /code/manage.py runserver 0.0.0.0:8000
     volumes:
       - ./tandem:/code
     ports:
