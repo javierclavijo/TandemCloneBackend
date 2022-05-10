@@ -1,11 +1,14 @@
 # tandem-backend
 
-Back end for language exchange chat app (similar to Tandem) written in Django REST Framework. Developed as final project
-for web development degree.
+Backend for tandem language exchange chat app written in Django REST Framework. Final project for Professional Training
+in Web Applications Development (_Grado Superior en Desarrollo de Aplicaciones Web_).
+
+Frontend repo: https://github.com/javierclavijo/tandem-frontend
 
 ## Deployment (Development)
 
-1. Create and activate a Python virtual environment for the project
+1. Create and activate a Python virtual environment for the
+   project (https://docs.python.org/3/library/venv.html#creating-virtual-environments)
 2. Install the project's dependencies
     - > `pip install -r requirements.txt`
 3. Run migrations to create the project's database
