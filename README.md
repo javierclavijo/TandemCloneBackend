@@ -23,3 +23,4 @@ Frontend repo: https://github.com/javierclavijo/tandem-frontend
 `docker compose up --build`
 `docker compose exec api python /code/manage.py migrate`
 `docker compose exec api python /code/manage.py seed_db`
+`docker compose exec api python /code/manage.py collectstatic`
