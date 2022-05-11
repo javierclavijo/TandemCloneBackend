@@ -39,10 +39,15 @@ services:
       - "8000:80"
     depends_on:
       - api
+    volumes:
+      - static-volume:/www/media
+      - media-volume:/www/static
 
 volumes:
   db-volume:
   redis-volume:
+  static-volume:
+  media-volume:
 
 networks:
   default:
