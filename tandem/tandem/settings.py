@@ -19,12 +19,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2apvxs!o@@3pbqcljk=6+56ouh9umh=w#%gri+^-(5sc+tysrz'
+SECRET_KEY = os.environ.get('SECRET_KEY') if os.environ.get(
+    'SECRET_KEY') is not None else 'django-insecure-2apvxs!o@@3pbqcljk=6+56ouh9umh=w#%gri+^-(5sc+tysrz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG') if os.environ.get('DEBUG') is not None else False
 
-# TODO
 ALLOWED_HOSTS = ['*']
 USE_X_FORWARDED_HOST = True
 
@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'tandem.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_NAME'),
+        'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': 'db',
@@ -120,9 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = os.environ.get('LANGUAGE_CODE') if os.environ.get('LANGUAGE_CODE') is not None else 'en-us'
 
-TIME_ZONE = 'Europe/Madrid'
+TIME_ZONE = os.environ.get('TIME_ZONE') if os.environ.get('TIME_ZONE') is not None else 'Europe/Madrid'
 
 USE_I18N = True
 

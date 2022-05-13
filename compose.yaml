@@ -7,10 +7,8 @@ services:
       - "5432:5432"
     volumes:
       - db-volume:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - .env
 
   redis:
     image: redis:6
@@ -26,9 +24,8 @@ services:
       - "8000"
     environment:
       - WAIT_HOSTS=db:5432, redis:6379
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - .env
     depends_on:
       - db
       - redis
@@ -50,7 +47,7 @@ volumes:
 
 networks:
   default:
-      name: tandem-network
-      external: true
+    name: tandem-network
+    external: true
 
 # Source: https://docs.docker.com/samples/django/
