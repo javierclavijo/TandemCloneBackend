@@ -19,9 +19,22 @@ Frontend repo: https://github.com/javierclavijo/tandem-frontend
 5. Create Redis Docker container for WS communication
     - > `docker run -p 6379:6379 -d --name tandem-ws-store redis:6`
 
+### Debugging
+
+To debug the application in PyCharm, a few additional steps are needed:
+
+1. Add the container's interpreter as the project's Python interpreter. Go to Settings -> Project -> Python Interpreter,
+   click on the settings icon and then on `Add...`. Select Docker Compose and set compose.yaml as the configuration file
+   and 'api' as the service, then click 'OK'.
+2. Set DEBUG to 1 in the .env file if it's not already set.
+3. Finally, a configuration must be created to run the app inside the container. Instructions can be found here:
+   https://www.jetbrains.com/help/pycharm/using-docker-compose-as-a-remote-interpreter.html#run
+
 ## Deployment with Docker-compose
+
 `docker network create tandem-network`
 `docker compose up --build` (frontend, then backend)
 `docker compose exec api python /code/manage.py migrate`
 `docker compose exec api python /code/manage.py seed_db`
 `docker compose exec api python /code/manage.py collectstatic`
+
