@@ -141,7 +141,7 @@ def get_csrf(request):
     - https://medium.com/swlh/django-rest-framework-and-spa-session-authentication-with-docker-and-nginx-aa64871f29cd
     - https://briancaffey.github.io/2021/01/01/session-authentication-with-django-django-rest-framework-and-nuxt/
     """
-    response = Response({'detail': 'CSRF cookie set'})
+    response = Response(None)
     return response
 
 
