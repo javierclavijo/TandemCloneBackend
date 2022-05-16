@@ -134,15 +134,22 @@ class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
 
 @api_view(['GET'])
 @ensure_csrf_cookie
-def get_csrf(request):
+def get_session_info(request):
     """
-    View to get the CSRF token.
+    View that returns the user's ID and detail URL in case they're authenticated, or null if they're not. Always returns
+     a CSRF token cookie, so that non-logged-in clients can fetch it and use it in login requests.
     Sources:
     - https://medium.com/swlh/django-rest-framework-and-spa-session-authentication-with-docker-and-nginx-aa64871f29cd
     - https://briancaffey.github.io/2021/01/01/session-authentication-with-django-django-rest-framework-and-nuxt/
+    - https://stackoverflow.com/a/59120949
     """
-    response = Response(None)
-    return response
+    user = request.user
+    if request.user.is_authenticated:
+        user_id = str(user.id)
+        url = request.build_absolute_uri(reverse('customuser-detail', kwargs={'pk': user_id}))
+        return Response({'id': user_id, 'url': url})
+    else:
+        return Response({'id': None, 'url': None})
 
 
 class LoginView(APIView):
