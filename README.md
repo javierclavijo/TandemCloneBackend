@@ -38,3 +38,6 @@ To debug the application in PyCharm, a few additional steps are needed:
 `docker compose exec api python /code/manage.py seed_db`
 `docker compose exec api python /code/manage.py collectstatic`
 
+Note: once the app is up in a local environment, it must be accessed from 127.0.0.1 instead of localhost. This is due to 
+the way the Nginx configuration is set up --the Access-Control-Allow-Origin header, which is required for sessions to 
+work, is set to the $host variable, which in practice means that it's set to 127.0.0.1, and localhost doesn't work.
