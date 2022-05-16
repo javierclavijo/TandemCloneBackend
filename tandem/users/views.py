@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, login, authenticate
+from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.db import transaction
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import permissions, status, parsers
@@ -173,3 +173,14 @@ class LoginView(APIView):
             return Response(None, status=status.HTTP_202_ACCEPTED)
         except KeyError as e:
             return Response({str(e.args[0]): ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    """
+    View to attempt user logout.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        logout(request)
+        return Response(None, status.HTTP_204_NO_CONTENT)
