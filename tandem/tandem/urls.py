@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework import routers
 
 from chats.views import FriendChatViewSet, FriendChatMessageViewSet, \
@@ -45,4 +46,7 @@ urlpatterns = [
                   path('api/login/', LoginView.as_view()),
                   path('api/logout/', LogoutView.as_view()),
                   path('api/session_info/', get_session_info),
+
+                  # OpenAPI Documentation
+                  path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
