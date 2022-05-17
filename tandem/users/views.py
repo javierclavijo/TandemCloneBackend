@@ -1,10 +1,11 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.db import transaction
+from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import permissions, status, parsers
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import action
+from rest_framework.authtoken.views import ObtainAuthToken, APIView
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -129,3 +130,57 @@ class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
         token = Token.objects.get(key=response.data['token'])
         url = request.build_absolute_uri(reverse('customuser-detail', kwargs={'pk': str(token.user.id)}))
         return Response({'token': token.key, 'id': token.user_id, 'url': url})
+
+
+@api_view(['GET'])
+@ensure_csrf_cookie
+def get_session_info(request):
+    """
+    View that returns the user's ID and detail URL in case they're authenticated, or null if they're not. Always returns
+     a CSRF token cookie, so that non-logged-in clients can fetch it and use it in login requests.
+    Sources:
+    - https://medium.com/swlh/django-rest-framework-and-spa-session-authentication-with-docker-and-nginx-aa64871f29cd
+    - https://briancaffey.github.io/2021/01/01/session-authentication-with-django-django-rest-framework-and-nuxt/
+    - https://stackoverflow.com/a/59120949
+    """
+    user = request.user
+    if request.user.is_authenticated:
+        user_id = str(user.id)
+        url = request.build_absolute_uri(reverse('customuser-detail', kwargs={'pk': user_id}))
+        return Response({'id': user_id, 'url': url})
+    else:
+        return Response({'id': None, 'url': None})
+
+
+class LoginView(APIView):
+    """
+    View to attempt user login.
+    Partial source: https://www.guguweb.com/2022/01/23/django-rest-framework-authentication-the-easy-way/
+    """
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            user = authenticate(request=request, username=username, password=password)
+
+            if user is None:
+                return Response({"non_field_errors": ["Unable to log in with provided credentials."]},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            login(request, user)
+            return Response(None, status=status.HTTP_202_ACCEPTED)
+        except KeyError as e:
+            return Response({str(e.args[0]): ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    """
+    View to attempt user logout.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        logout(request)
+        return Response(None, status.HTTP_204_NO_CONTENT)
