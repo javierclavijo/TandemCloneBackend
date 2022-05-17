@@ -2,14 +2,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from drf_spectacular.views import SpectacularSwaggerView
+from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 from rest_framework import routers
 
 from chats.views import FriendChatViewSet, FriendChatMessageViewSet, \
     ChannelChatMessageViewSet
 from communities.views import ChannelViewSet, MembershipViewSet
 from users import views
-from users.views import ObtainAuthTokenWithIdAndUrl, LoginView, get_session_info, LogoutView
+from users.views import LoginView, get_session_info, LogoutView
 
 """tandem URL Configuration
 
@@ -36,17 +36,14 @@ router.register(r'friend_chats', FriendChatViewSet)
 router.register(r'friend_chat_messages', FriendChatMessageViewSet)
 router.register(r'channel_chat_messages', ChannelChatMessageViewSet)
 
-# Wire up our API using automatic URL routing.
-# Additionally, we include login URLs for the browsable API.
 urlpatterns = [
                   path('api/', include(router.urls)),
                   path('api/admin/', admin.site.urls),
-                  path('api/api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                  path('api/api-token-auth/', ObtainAuthTokenWithIdAndUrl.as_view()),
                   path('api/login/', LoginView.as_view()),
                   path('api/logout/', LogoutView.as_view()),
                   path('api/session_info/', get_session_info),
 
                   # OpenAPI Documentation
+                  path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
                   path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
