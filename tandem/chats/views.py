@@ -79,8 +79,13 @@ class FriendChatViewSet(mixins.ListModelMixin,
             OpenApiParameter('chat', type=OpenApiTypes.UUID, required=True,
                              description="The ID of the chat that the messages belong to. The session's user must be "
                                          "one of the chat's users, unless they're a superuser.", )
-        ]))
-class FriendChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+        ]),
+    retrieve=extend_schema(
+        description="Returns the details of the specified user chat message."
+    ))
+class FriendChatMessageViewSet(mixins.ListModelMixin,
+                               mixins.RetrieveModelMixin,
+                               viewsets.GenericViewSet):
     """
     Returns the list of chat messages that belong to a user chat.
     """
@@ -97,10 +102,14 @@ class FriendChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     list=extend_schema(
         parameters=[
             OpenApiParameter('channel', type=OpenApiTypes.UUID, required=True,
-                             description="The ID of the channel that the messages belong to. The session's user must"
+                             description="The ID of the channel that the messages belong to. The session's user must "
                                          "have a membership in the specified channel, unless they're a superuser.", )
-        ]))
+        ]),
+    retrieve=extend_schema(
+        description="Returns the details of the specified channel chat message."
+    ))
 class ChannelChatMessageViewSet(mixins.ListModelMixin,
+                                mixins.RetrieveModelMixin,
                                 viewsets.GenericViewSet):
     """
     Returns the list of chat messages that belong to a channel.

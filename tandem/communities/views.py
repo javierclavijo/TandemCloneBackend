@@ -16,7 +16,7 @@ from communities.serializers import ChannelSerializer
         parameters=[
             OpenApiParameter('memberships__user', type=OpenApiTypes.UUID, required=True,
                              description="The ID of a user to filter the list by. Used to fetch the chat list for "
-                                         "the session's user .", )
+                                         "the session's user.", )
         ]
     ),
     retrieve=extend_schema(
