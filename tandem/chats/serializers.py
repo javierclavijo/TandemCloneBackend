@@ -82,7 +82,6 @@ class ChannelChatMessageSerializer(serializers.HyperlinkedModelSerializer):
         model = ChannelChatMessage
         fields = [
             'id',
-            'url',
             'author',
             'channel',
             'content',

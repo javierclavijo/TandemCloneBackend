@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import viewsets, permissions, parsers
 
 from chats.models import ChannelChatMessage
@@ -8,9 +10,28 @@ from communities.models import Channel, Membership
 from communities.serializers import ChannelSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        description="Returns a list of channels.",
+        parameters=[
+            OpenApiParameter('memberships__user', type=OpenApiTypes.UUID, required=True,
+                             description="The ID of a user to filter the list by. Used to fetch the chat list for "
+                                         "the session's user .", )
+        ]
+    ),
+    retrieve=extend_schema(
+        description="Returns the details of the specified channel.",
+    ),
+    partial_update=extend_schema(
+        description="Modifies the details of the specified channel.",
+    ),
+    destroy=extend_schema(
+        description="Deletes the specified channel."
+    )
+)
 class ChannelViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited.
+    Allows channels to be viewed, edited or deleted.
     """
 
     class Meta:
@@ -18,7 +39,6 @@ class ChannelViewSet(viewsets.ModelViewSet):
 
     queryset = Channel.objects.all()
     serializer_class = ChannelSerializer
-    permission_classes = [permissions.IsAuthenticated]
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     filterset_class = ChannelFilter
 
@@ -26,7 +46,7 @@ class ChannelViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
 
     def create(self, request, *args, **kwargs):
-        """ After creating a channel, creates a membership for it with the request's user and 'Admin' role. """
+        """ Creates a channel and an associated admin membership for the session's user. """
         response = super(ChannelViewSet, self).create(request, *args, **kwargs)
         channel_id = response.data['id']
 

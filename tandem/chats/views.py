@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
-from rest_framework import permissions, viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -28,7 +28,6 @@ class FriendChatViewSet(viewsets.ModelViewSet):
 
     queryset = FriendChat.objects.all()
     serializer_class = FriendChatSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ('users',)
 
     @transaction.atomic
@@ -75,22 +74,20 @@ class FriendChatMessageViewSet(viewsets.ModelViewSet):
 
     queryset = FriendChatMessage.objects.all()
     serializer_class = FriendChatMessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filterset_fields = ('chat',)
 
 
 @extend_schema_view(
     list=extend_schema(
-        description='Allows users to view the list of chat messages that belong to a channel.',
         parameters=[
             OpenApiParameter('channel', type=OpenApiTypes.UUID, required=True,
-                             description='The ID of the channel that the messages belong to.',)
+                             description='The ID of the channel that the messages belong to.', )
         ]
-    )
+    ),
 )
-class ChannelChatMessageViewSet(viewsets.ModelViewSet):
+class ChannelChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
-    Allows users to view, update and delete channel chat messages.
+    Returns the list of chat messages that belong to a channel.
     """
 
     class Meta:
@@ -98,5 +95,4 @@ class ChannelChatMessageViewSet(viewsets.ModelViewSet):
 
     queryset = ChannelChatMessage.objects.all()
     serializer_class = ChannelChatMessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
     filterset_class = ChannelChatMessageFilter

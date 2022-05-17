@@ -5,7 +5,7 @@ from rest_framework import permissions, status, parsers
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -30,17 +30,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     # Disable PUT method, as it's not currently supported due to nested serializer fields
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
-
-    def get_permissions(self):
-        """
-        Instantiates and returns the list of permissions that this view requires.
-        """
-        # TODO: add a permission to check whether request.user matches the ViewSet's instance (or is admin)
-        if self.action == 'create':
-            permission_classes = []
-        else:
-            permission_classes = [permissions.IsAuthenticated]
-        return [permission() for permission in permission_classes]
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -133,6 +122,7 @@ class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
 
 
 @api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 @ensure_csrf_cookie
 def get_session_info(request):
     """
@@ -179,7 +169,6 @@ class LogoutView(APIView):
     """
     View to attempt user logout.
     """
-    permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request):
         logout(request)
