@@ -50,11 +50,10 @@ class Command(BaseCommand):
 
         # Create and save admin user. If it already exists, skip it.
         try:
-            admin = user_model.objects.create_user(
+            admin = user_model.objects.create_superuser(
                 username="admin",
                 email="admin@example.com",
                 password="password",
-                is_staff=True
             )
             admin.save()
             self.stdout.write(self.style.SUCCESS(f'Successfully created user "{admin}"'))
