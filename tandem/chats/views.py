@@ -6,34 +6,43 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from chats.filters import ChannelChatMessageFilter, FriendChatMessageFilter
+from chats.filters import ChannelChatMessageFilter, FriendChatMessageFilter, FriendChatFilter
 from chats.models import FriendChat, FriendChatMessage, ChannelChatMessage
 from chats.serializers import FriendChatSerializer, ChannelChatMessageSerializer, \
     FriendChatMessageSerializer
 
 
-class FriendChatViewSet(viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        description="Returns a list of user chats.",
+        parameters=[
+            OpenApiParameter('users', type=OpenApiTypes.UUID, required=True,
+                             description="The ID of a user to filter by. The session's user must be the same as the "
+                                         "specified user, unless they're a superuser.", )
+        ]
+    ),
+    retrieve=extend_schema(
+        description="Returns the details of the specified user chat.",
+    ))
+class FriendChatViewSet(mixins.ListModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
     """
-    API endpoint that allows users to view chats, send messages and edit them, etc.
-    Restricts data to the request's user's chats, unless they are staff.
+    Allow users to view the list of friend chats and create new ones.
     """
 
     class Meta:
         model = FriendChat
 
-    def get_queryset(self):
-        if self.request.user.is_staff:
-            return FriendChat.objects.all()
-        return self.request.user.friend_chats.all()
-
     queryset = FriendChat.objects.all()
     serializer_class = FriendChatSerializer
-    filterset_fields = ('users',)
+    filterset_class = FriendChatFilter
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        """ After creating a friend chat, adds the request's user and the other user (specified in the 'users' array in
-        the request) to the related users list. Additionally, create the first message of the chat. """
+        """ Creates a friend chat, adding the creator and the other specified user to the related users list, and adds a
+         'Chat created' message to use as the chat's first message. """
 
         if not len(request.data['users']):
             return Response(data={"error": "No users were specified."},
@@ -68,10 +77,9 @@ class FriendChatViewSet(viewsets.ModelViewSet):
     list=extend_schema(
         parameters=[
             OpenApiParameter('chat', type=OpenApiTypes.UUID, required=True,
-                             description='The ID of the chat that the messages belong to.', )
-        ]
-    ),
-)
+                             description="The ID of the chat that the messages belong to. The session's user must be "
+                                         "one of the chat's users, unless they're a superuser.", )
+        ]))
 class FriendChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     Returns the list of chat messages that belong to a user chat.
@@ -89,11 +97,11 @@ class FriendChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     list=extend_schema(
         parameters=[
             OpenApiParameter('channel', type=OpenApiTypes.UUID, required=True,
-                             description='The ID of the channel that the messages belong to.', )
-        ]
-    ),
-)
-class ChannelChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+                             description="The ID of the channel that the messages belong to. The session's user must"
+                                         "have a membership in the specified channel, unless they're a superuser.", )
+        ]))
+class ChannelChatMessageViewSet(mixins.ListModelMixin,
+                                viewsets.GenericViewSet):
     """
     Returns the list of chat messages that belong to a channel.
     """
