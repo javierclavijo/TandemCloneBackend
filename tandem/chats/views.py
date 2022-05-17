@@ -6,7 +6,7 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from chats.filters import ChannelChatMessageFilter
+from chats.filters import ChannelChatMessageFilter, FriendChatMessageFilter
 from chats.models import FriendChat, FriendChatMessage, ChannelChatMessage
 from chats.serializers import FriendChatSerializer, ChannelChatMessageSerializer, \
     FriendChatMessageSerializer
@@ -64,9 +64,17 @@ class FriendChatViewSet(viewsets.ModelViewSet):
         return response
 
 
-class FriendChatMessageViewSet(viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter('chat', type=OpenApiTypes.UUID, required=True,
+                             description='The ID of the chat that the messages belong to.', )
+        ]
+    ),
+)
+class FriendChatMessageViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
-    API endpoint that allows users to view user chat messages, etc.
+    Returns the list of chat messages that belong to a user chat.
     """
 
     class Meta:
@@ -74,7 +82,7 @@ class FriendChatMessageViewSet(viewsets.ModelViewSet):
 
     queryset = FriendChatMessage.objects.all()
     serializer_class = FriendChatMessageSerializer
-    filterset_fields = ('chat',)
+    filterset_class = FriendChatMessageFilter
 
 
 @extend_schema_view(
