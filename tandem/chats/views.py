@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
-from rest_framework import viewsets, status, mixins
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, inline_serializer, \
+    OpenApiResponse
+from rest_framework import viewsets, status, mixins, fields
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -23,7 +24,23 @@ from chats.serializers import FriendChatSerializer, ChannelChatMessageSerializer
     ),
     retrieve=extend_schema(
         description="Returns the details of the specified user chat.",
-    ))
+    ),
+    create=extend_schema(
+        request=inline_serializer(name="friend_chat_create_request", fields={
+            "users": fields.ListField(child=fields.UUIDField())
+        }),
+        responses={
+            400: OpenApiResponse(description="No user was specified, the specified user is the same as the session's "
+                                             "user or a chat for this pair of users already exists.",
+                                 response=inline_serializer(name="friend_chat_create_bad_request", fields={
+                                     "error": fields.CharField()
+                                 })),
+            404: OpenApiResponse(description="The user specified in the 'users' field was not found.",
+                                 response=inline_serializer(name="friend_chat_create_not_found", fields={
+                                     "detail": fields.CharField()
+                                 }))
+        })
+)
 class FriendChatViewSet(mixins.ListModelMixin,
                         mixins.CreateModelMixin,
                         mixins.RetrieveModelMixin,
@@ -41,14 +58,20 @@ class FriendChatViewSet(mixins.ListModelMixin,
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        """ Creates a friend chat, adding the creator and the other specified user to the related users list, and adds a
-         'Chat created' message to use as the chat's first message. """
+        """ Creates a friend chat, adding the creator and the user specified in the 'users' array to the related users
+        list, and adds a 'Chat created' message as the chat's first message. """
 
         if not len(request.data['users']):
             return Response(data={"error": "No users were specified."},
                             status=status.HTTP_400_BAD_REQUEST)
 
         other_user = get_object_or_404(get_user_model(), id=request.data['users'][0])
+
+        # Check that the other user is not the same user as the session's user
+        if other_user.id == request.user.id:
+            return Response(data={"error": "The user specified in the request cannot be the same as the session's "
+                                           "user."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # Check that a chat with the two users doesn't exist already
         if FriendChat.objects.filter(users=request.user).filter(users=other_user).exists():

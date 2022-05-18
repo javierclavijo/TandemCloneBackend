@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.db import transaction
 from django.views.decorators.csrf import ensure_csrf_cookie
-from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer
-from rest_framework import permissions, status, parsers, fields
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer, extend_schema_view, \
+    OpenApiParameter
+from rest_framework import permissions, status, parsers, fields, mixins
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
@@ -16,9 +18,35 @@ from users.models import UserLanguage
 from users.serializers import UserSerializer, UserLanguageSerializer, UserPasswordUpdateSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
+@extend_schema_view(
+    retrieve=extend_schema(
+        description="Returns the details of the specified user.",
+    ),
+    list=extend_schema(
+        description="Returns a list of users.",
+        parameters=[
+            OpenApiParameter('levels', type=OpenApiTypes.STR, many=True,
+                             description="Filters users by the level of their learning (i.e. non-native) languages. "),
+        ]
+    ),
+    create=extend_schema(
+        description="Creates a user."
+    ),
+    partial_update=extend_schema(
+        description="Modifies the details of the specified user.",
+    ),
+    set_password=extend_schema(
+        description="Sets the session's user's password",
+        request=UserPasswordUpdateSerializer,
+    )
+)
+class UserViewSet(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  mixins.UpdateModelMixin,
+                  viewsets.GenericViewSet):
     """
-    API endpoints that allow users to be viewed or edited.
+    Allows users to be viewed, created or edited.
     """
 
     class Meta:
@@ -97,9 +125,27 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class UserLanguageViewSet(viewsets.ModelViewSet):
+@extend_schema_view(
+    retrieve=extend_schema(
+        description="Returns the details of the specified language object.",
+    ),
+    create=extend_schema(
+        description="Creates a user language object."
+    ),
+    partial_update=extend_schema(
+        description="Modifies the details of the specified language object.",
+    ),
+    destroy=extend_schema(
+        description="Deletes the specified language object."
+    )
+)
+class UserLanguageViewSet(mixins.RetrieveModelMixin,
+                          mixins.CreateModelMixin,
+                          mixins.UpdateModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
     """
-    API endpoints that allow users to be viewed or edited.
+    Allows user languages to be viewed, created or edited.
     """
 
     class Meta:
@@ -107,6 +153,7 @@ class UserLanguageViewSet(viewsets.ModelViewSet):
 
     queryset = UserLanguage.objects.all()
     serializer_class = UserLanguageSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head']
 
 
 class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
@@ -122,25 +169,33 @@ class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
         return Response({'token': token.key, 'id': token.user_id, 'url': url})
 
 
+@extend_schema(
+    responses={
+        200: OpenApiResponse(response=inline_serializer(name="session_info_response", fields={
+            "id": fields.UUIDField(allow_null=True),
+            "url": fields.CharField(allow_blank=True),
+        })),
+    },
+)
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 @ensure_csrf_cookie
 def get_session_info(request):
     """
-    View that returns the user's ID and detail URL in case they're authenticated, or null if they're not. Always returns
+    Returns the user's ID and detail URL in case they're authenticated, or null if they're not. Always returns
      a CSRF token cookie, so that non-logged-in clients can fetch it and use it in login requests.
-    Sources:
-    - https://medium.com/swlh/django-rest-framework-and-spa-session-authentication-with-docker-and-nginx-aa64871f29cd
-    - https://briancaffey.github.io/2021/01/01/session-authentication-with-django-django-rest-framework-and-nuxt/
-    - https://stackoverflow.com/a/59120949
     """
     user = request.user
     if request.user.is_authenticated:
         user_id = str(user.id)
         url = request.build_absolute_uri(reverse('customuser-detail', kwargs={'pk': user_id}))
-        return Response({'id': user_id, 'url': url})
+        return Response({'id': user_id, 'url': url}, status=status.HTTP_200_OK)
     else:
-        return Response({'id': None, 'url': None})
+        return Response({'id': None, 'url': None}, status=status.HTTP_200_OK)
+    # Sources:
+    # - https://medium.com/swlh/django-rest-framework-and-spa-session-authentication-with-docker-and-nginx-aa64871f29cd
+    # - https://briancaffey.github.io/2021/01/01/session-authentication-with-django-django-rest-framework-and-nuxt/
+    # - https://stackoverflow.com/a/59120949
 
 
 @extend_schema(

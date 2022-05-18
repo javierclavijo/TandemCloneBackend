@@ -1,6 +1,6 @@
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
-from rest_framework import viewsets, permissions, parsers
+from rest_framework import viewsets, parsers, mixins
 
 from chats.models import ChannelChatMessage
 from chats.serializers import ChannelChatMessageSerializer
@@ -70,9 +70,27 @@ class ChannelViewSet(viewsets.ModelViewSet):
         return response
 
 
-class MembershipViewSet(viewsets.ModelViewSet):
+@extend_schema_view(
+    retrieve=extend_schema(
+        description="Returns the details of the specified membership.",
+    ),
+    create=extend_schema(
+        description="Creates a membership."
+    ),
+    partial_update=extend_schema(
+        description="Modifies the details of the specified membership.",
+    ),
+    destroy=extend_schema(
+        description="Deletes the specified membership."
+    )
+)
+class MembershipViewSet(mixins.RetrieveModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
     """
-    API endpoints that allow channel memberships to be viewed or edited.
+    Allows channel memberships to be viewed, created or edited.
     """
 
     class Meta:
@@ -80,3 +98,4 @@ class MembershipViewSet(viewsets.ModelViewSet):
 
     queryset = Membership.objects.all()
     serializer_class = MembershipSerializer
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head']
