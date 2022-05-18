@@ -5,7 +5,7 @@ from chats.models import FriendChat
 from communities.models import Channel
 
 
-class IsAdminUserOrChannelMember(permissions.BasePermission):
+class CanViewChannelChatMessages(permissions.BasePermission):
     """
     Object and model-level permissions to only allow staff and the members of a channel to view its messages. Used in channel chat
     message views.
@@ -37,7 +37,7 @@ class IsAdminUserOrChannelMember(permissions.BasePermission):
         return False
 
 
-class FriendChatMessageIsAdminOrChatUser(permissions.BasePermission):
+class CanViewFriendChatMessages(permissions.BasePermission):
     """
     Object and model-level permissions to only allow staff and the users of a friend chat to view its messages. Used in
     friend chat message views.
