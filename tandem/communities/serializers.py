@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
@@ -24,14 +25,14 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
         Source: https://stackoverflow.com/a/50633184
         """
 
-        class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
+        class ChannelMembershipUserSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
                 model = get_user_model()
                 depth = nested_depth - 1
                 fields = ['id', 'url', 'username', 'description', 'image']
 
-        class NestedMembershipSerializer(serializers.HyperlinkedModelSerializer):
-            user = NestedUserSerializer(read_only=True)
+        class ChannelMembershipSerializer(serializers.HyperlinkedModelSerializer):
+            user = ChannelMembershipUserSerializer(read_only=True)
 
             class Meta:
                 model = relation_info.related_model
@@ -39,7 +40,7 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
                 fields = ['id', 'url', 'user', 'role']
 
         if field_name == 'memberships':
-            field_class = NestedMembershipSerializer
+            field_class = ChannelMembershipSerializer
 
         field_kwargs = get_nested_relation_kwargs(relation_info)
 
@@ -48,6 +49,7 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
     messages = serializers.SerializerMethodField(method_name='get_messages')
     image = serializers.ImageField(required=False)
 
+    @extend_schema_field(ChannelChatMessageSerializer())
     def get_messages(self, instance):
         # If the user is admin or a member of the channel, get only the latest message for the channel. Else, return an
         # empty queryset.

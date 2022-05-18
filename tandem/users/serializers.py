@@ -4,8 +4,7 @@ from rest_framework import serializers
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
 from rest_framework.validators import UniqueValidator
 
-from common.serializers import MembershipSerializer
-from communities.models import Membership, Channel
+from communities.models import Channel
 from users.models import UserLanguage
 
 
@@ -18,22 +17,6 @@ class UserLanguageSerializer(serializers.HyperlinkedModelSerializer):
             'user',
             'language',
             'level'
-        ]
-
-
-class UserMembershipSerializer(MembershipSerializer):
-    """
-    Membership serializer to use in user serializer, for representational purposes. Excludes user field from
-    representation.
-    """
-
-    class Meta:
-        model = Membership
-        fields = [
-            'id',
-            'url',
-            'channel',
-            'role'
         ]
 
 
@@ -66,16 +49,16 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         Source: https://stackoverflow.com/a/50633184
         """
 
-        class NestedFriendChatSerializer(serializers.HyperlinkedModelSerializer):
+        class UserFriendChatSerializer(serializers.HyperlinkedModelSerializer):
             def build_nested_field(self, field_name_2, relation_info_2, nested_depth_2):
-                class NestedUserSerializer(serializers.HyperlinkedModelSerializer):
+                class UserFriendChatUserSerializer(serializers.HyperlinkedModelSerializer):
                     class Meta:
                         model = relation_info_2.related_model
                         depth = nested_depth_2 - 1
                         fields = ['id', 'url', 'username', 'description', 'image']
 
                 if field_name_2 == 'users':
-                    field_class_2 = NestedUserSerializer
+                    field_class_2 = UserFriendChatUserSerializer
 
                 field_kwargs_2 = get_nested_relation_kwargs(relation_info_2)
 
@@ -86,14 +69,14 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 depth = nested_depth - 1
                 fields = ['id', 'url', 'users']
 
-        class NestedChannelSerializer(serializers.HyperlinkedModelSerializer):
+        class UserChannelSerializer(serializers.HyperlinkedModelSerializer):
             class Meta:
                 model = Channel
                 depth = nested_depth - 2
                 fields = ['id', 'url', 'name', 'description', 'language', 'level', 'image']
 
-        class NestedMembershipSerializer(serializers.HyperlinkedModelSerializer):
-            channel = NestedChannelSerializer(read_only=True)
+        class UserMembershipSerializer(serializers.HyperlinkedModelSerializer):
+            channel = UserChannelSerializer(read_only=True)
 
             class Meta:
                 model = relation_info.related_model
@@ -101,9 +84,9 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                 fields = ['id', 'url', 'channel', 'role']
 
         if field_name == 'friend_chats':
-            field_class = NestedFriendChatSerializer
+            field_class = UserFriendChatSerializer
         if field_name == 'memberships':
-            field_class = NestedMembershipSerializer
+            field_class = UserMembershipSerializer
 
         field_kwargs = get_nested_relation_kwargs(relation_info)
 

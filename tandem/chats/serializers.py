@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
@@ -40,6 +41,7 @@ class FriendChatSerializer(serializers.HyperlinkedModelSerializer):
             str(reverse('friendchatmessage-list')) + '?chat=' + str(instance.id))
         return ret
 
+    @extend_schema_field(FriendChatMessageSerializer(many=True))
     def get_messages(self, instance):
         queryset = instance.messages.order_by('-timestamp')[:1]
         return FriendChatMessageSerializer(queryset, many=True, read_only=True,

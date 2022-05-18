@@ -240,8 +240,9 @@ class LoginView(APIView):
 
 @extend_schema(
     responses={
-        204: OpenApiResponse(description="Successful logout", response=None),
-    }
+        204: OpenApiResponse(description="Successful logout.", response=None),
+    },
+    request=None
 )
 class LogoutView(APIView):
     """
