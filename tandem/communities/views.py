@@ -7,6 +7,7 @@ from chats.serializers import ChannelChatMessageSerializer
 from common.serializers import MembershipSerializer
 from communities.filters import ChannelFilter
 from communities.models import Channel, Membership
+from communities.permissions import IsAdminOrChannelStaffUser
 from communities.serializers import ChannelSerializer
 
 
@@ -41,6 +42,7 @@ class ChannelViewSet(viewsets.ModelViewSet):
     serializer_class = ChannelSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     filterset_class = ChannelFilter
+    permission_classes = [IsAdminOrChannelStaffUser]
 
     # Disable PUT method, as it's not currently supported due to nested serializer fields
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']

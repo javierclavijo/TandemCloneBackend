@@ -36,6 +36,7 @@ class FriendChatSerializer(serializers.HyperlinkedModelSerializer):
     messages = serializers.SerializerMethodField(method_name='get_messages')
 
     def to_representation(self, instance):
+        """ Add the chat's message list URL to the chat's representation."""
         ret = super(FriendChatSerializer, self).to_representation(instance)
         ret['messageUrl'] = self.context['request'].build_absolute_uri(
             str(reverse('friendchatmessage-list')) + '?chat=' + str(instance.id))
@@ -43,7 +44,13 @@ class FriendChatSerializer(serializers.HyperlinkedModelSerializer):
 
     @extend_schema_field(FriendChatMessageSerializer(many=True))
     def get_messages(self, instance):
-        queryset = instance.messages.order_by('-timestamp')[:1]
+        # If the user is admin or a member of the chat, get only the chat's latest message. Else, return an empty
+        # queryset.
+        user = self.context['request'].user
+        if user.is_staff or user in instance.users.all():
+            queryset = instance.messages.order_by('-timestamp')[:1]
+        else:
+            queryset = instance.messages.none()
         return FriendChatMessageSerializer(queryset, many=True, read_only=True,
                                            context={'request': self.context['request']}).data
 
