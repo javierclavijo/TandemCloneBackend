@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from communities.models import Channel, ChannelRole, Membership
 
@@ -35,4 +36,10 @@ class MembershipSerializer(serializers.ModelSerializer):
             'channel',
             'user',
             'role'
+        ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Membership.objects.all(),
+                fields=['user', 'channel']
+            )
         ]

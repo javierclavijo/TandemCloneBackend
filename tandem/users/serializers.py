@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.utils.field_mapping import get_nested_relation_kwargs
-from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
 
 from communities.models import Channel
 from users.models import UserLanguage
@@ -17,6 +17,12 @@ class UserLanguageSerializer(serializers.HyperlinkedModelSerializer):
             'user',
             'language',
             'level'
+        ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=UserLanguage.objects.all(),
+                fields=['user', 'language']
+            )
         ]
 
 
