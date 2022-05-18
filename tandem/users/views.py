@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model, login, authenticate, logout
 from django.db import transaction
 from django.views.decorators.csrf import ensure_csrf_cookie
-from rest_framework import permissions, status, parsers
+from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer
+from rest_framework import permissions, status, parsers, fields
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
@@ -142,10 +143,26 @@ def get_session_info(request):
         return Response({'id': None, 'url': None})
 
 
+@extend_schema(
+    request=inline_serializer(name="login_request", fields={
+        "username": fields.CharField(),
+        "password": fields.CharField(),
+    }),
+    responses={
+        204: OpenApiResponse(description="Successful login.", response=None),
+        401: OpenApiResponse(description="Invalid credentials.",
+                             response=inline_serializer(name="login_response_unauthorized", fields={
+                                 "non_field_errors": fields.ListField(child=fields.CharField())
+                             })),
+        403: OpenApiResponse(description="Required field not provided.",
+                             response=inline_serializer(name="login_response_bad_request", fields={
+                                 "username": fields.ListField(child=fields.CharField()),
+                                 "password": fields.ListField(child=fields.CharField()),
+                             })),
+    })
 class LoginView(APIView):
     """
-    View to attempt user login.
-    Partial source: https://www.guguweb.com/2022/01/23/django-rest-framework-authentication-the-easy-way/
+    Attempts user login.
     """
     permission_classes = (permissions.AllowAny,)
 
@@ -157,17 +174,23 @@ class LoginView(APIView):
 
             if user is None:
                 return Response({"non_field_errors": ["Unable to log in with provided credentials."]},
-                                status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_401_UNAUTHORIZED)
 
             login(request, user)
-            return Response(None, status=status.HTTP_202_ACCEPTED)
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
         except KeyError as e:
             return Response({str(e.args[0]): ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+    #   Partial source: https://www.guguweb.com/2022/01/23/django-rest-framework-authentication-the-easy-way/
 
 
+@extend_schema(
+    responses={
+        204: OpenApiResponse(description="Successful logout", response=None),
+    }
+)
 class LogoutView(APIView):
     """
-    View to attempt user logout.
+    Attempts user logout.
     """
 
     def post(self, request):
