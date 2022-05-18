@@ -41,8 +41,8 @@ class CanCreateEditOrDeleteMembership(permissions.BasePermission):
                 return request.data['user'] == serializer.data['url']
             except ValueError:
                 raise exceptions.NotFound
-        # Allow all PATCH requests to make has_object_permission() handle them.
-        elif request.method == 'PATCH':
+        # Allow all PATCH and DELETE requests to make has_object_permission() handle them.
+        elif request.method in ['PATCH', 'DELETE']:
             return True
         # Always allow GET, HEAD and OPTIONS requests.
         elif request.method in permissions.SAFE_METHODS:
@@ -53,10 +53,14 @@ class CanCreateEditOrDeleteMembership(permissions.BasePermission):
         # Allow all requests by admin users.
         if request.user.is_staff:
             return True
+
+        user_is_channel_staff = obj.channel.memberships.filter(user=request.user,
+                                                               role__in=[ChannelRole.MOD, ChannelRole.ADMIN]).exists()
         # Allow PATCH requests only if the user has a staff role (i.e. admin or moderator)
-        elif request.method == 'PATCH':
-            return obj.channel.memberships.filter(user=request.user,
-                                                  role__in=[ChannelRole.MOD, ChannelRole.ADMIN]).exists()
+        if request.method == 'PATCH':
+            return user_is_channel_staff
+        if request.method == 'DELETE':
+            return obj.user == request.user or user_is_channel_staff
         # Always allow GET, HEAD and OPTIONS requests.
         elif request.method in permissions.SAFE_METHODS:
             return True
