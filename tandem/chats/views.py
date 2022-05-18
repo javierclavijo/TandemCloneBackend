@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from chats.filters import ChannelChatMessageFilter, FriendChatMessageFilter, FriendChatFilter
 from chats.models import FriendChat, FriendChatMessage, ChannelChatMessage
+from chats.permissions import IsAdminUserOrChannelMember, IsAdminUserOrChatUser
 from chats.serializers import FriendChatSerializer, ChannelChatMessageSerializer, \
     FriendChatMessageSerializer
 
@@ -119,6 +120,7 @@ class FriendChatMessageViewSet(mixins.ListModelMixin,
     queryset = FriendChatMessage.objects.all()
     serializer_class = FriendChatMessageSerializer
     filterset_class = FriendChatMessageFilter
+    permission_classes = [IsAdminUserOrChatUser]
 
 
 @extend_schema_view(
@@ -144,3 +146,4 @@ class ChannelChatMessageViewSet(mixins.ListModelMixin,
     queryset = ChannelChatMessage.objects.all()
     serializer_class = ChannelChatMessageSerializer
     filterset_class = ChannelChatMessageFilter
+    permission_classes = [IsAdminUserOrChannelMember]
