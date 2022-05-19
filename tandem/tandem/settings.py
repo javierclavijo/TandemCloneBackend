@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'channels',
     'django_filters',
     'drf_spectacular',
+    'dry_rest_permissions',
 
     # Project apps
     'common',
