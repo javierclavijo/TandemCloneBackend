@@ -4,6 +4,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer, extend_schema_view, \
     OpenApiParameter
+from dry_rest_permissions.generics import DRYPermissions
 from rest_framework import permissions, status, parsers, fields, mixins
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
@@ -154,6 +155,7 @@ class UserLanguageViewSet(mixins.RetrieveModelMixin,
     queryset = UserLanguage.objects.all()
     serializer_class = UserLanguageSerializer
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
+    permission_classes = [DRYPermissions]
 
 
 class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
