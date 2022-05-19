@@ -3,13 +3,13 @@ from django.db import transaction
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, inline_serializer, \
     OpenApiResponse
+from dry_rest_permissions.generics import DRYPermissions
 from rest_framework import viewsets, status, mixins, fields
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from chats.filters import ChannelChatMessageFilter, FriendChatMessageFilter, FriendChatFilter
 from chats.models import FriendChat, FriendChatMessage, ChannelChatMessage
-from chats.permissions import CanViewChannelChatMessages, CanViewFriendChatMessages
 from chats.serializers import FriendChatSerializer, ChannelChatMessageSerializer, \
     FriendChatMessageSerializer
 
@@ -120,7 +120,7 @@ class FriendChatMessageViewSet(mixins.ListModelMixin,
     queryset = FriendChatMessage.objects.all()
     serializer_class = FriendChatMessageSerializer
     filterset_class = FriendChatMessageFilter
-    permission_classes = [CanViewFriendChatMessages]
+    permission_classes = [DRYPermissions]
 
 
 @extend_schema_view(
@@ -146,4 +146,4 @@ class ChannelChatMessageViewSet(mixins.ListModelMixin,
     queryset = ChannelChatMessage.objects.all()
     serializer_class = ChannelChatMessageSerializer
     filterset_class = ChannelChatMessageFilter
-    permission_classes = [CanViewChannelChatMessages]
+    permission_classes = [DRYPermissions]

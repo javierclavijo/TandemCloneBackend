@@ -3,6 +3,9 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from dry_rest_permissions.generics import authenticated_users, allow_staff_or_superuser
+from rest_framework.generics import get_object_or_404
+
 
 
 class AbstractChatMessage(models.Model):
@@ -19,6 +22,21 @@ class AbstractChatMessage(models.Model):
 
 
 class FriendChatMessage(AbstractChatMessage):
+
+    @staticmethod
+    @authenticated_users
+    @allow_staff_or_superuser
+    def has_list_permission(request):
+        """ Allow only chat members and staff to access the message list. """
+        chat = get_object_or_404(FriendChat, id=request.query_params.get('chat'))
+        return chat.users.filter(id=request.user.id).exists()
+
+    @authenticated_users
+    @allow_staff_or_superuser
+    def has_object_read_permission(self, request):
+        """ Allow only chat members and staff to access the message's details. """
+        return self.chat.users.filter(id=request.user.id).exists()
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     chat = models.ForeignKey(
         to='FriendChat',
@@ -46,6 +64,23 @@ class FriendChat(models.Model):
 
 
 class ChannelChatMessage(AbstractChatMessage):
+
+    @staticmethod
+    @authenticated_users
+    @allow_staff_or_superuser
+    def has_list_permission(request):
+        """ Allow only channel members and staff to access the message list. """
+        from communities.models import Channel
+        channel = get_object_or_404(Channel, id=request.query_params.get('channel'))
+        return channel.memberships.filter(user=request.user).exists()
+
+    @authenticated_users
+    @allow_staff_or_superuser
+    def has_object_read_permission(self, request):
+        """ Allow only channel members and staff to access the message's details. """
+        return self.channel.memberships.filter(user=request.user).exists()
+
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
