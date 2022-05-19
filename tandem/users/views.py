@@ -219,7 +219,7 @@ class LoginView(APIView):
     """
     Attempts user login.
     """
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         try:
