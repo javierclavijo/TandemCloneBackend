@@ -16,6 +16,35 @@ def upload_to(instance, filename):
 
 
 class CustomUser(AbstractUser):
+
+    @staticmethod
+    @authenticated_users
+    def has_read_permission(request):
+        """ Allow all authenticated users to view all users. """
+        return True
+
+    @authenticated_users
+    def has_object_read_permission(self, request):
+        """ Allow all authenticated users to view all users. """
+        return True
+
+    @staticmethod
+    def has_create_permission(request):
+        """ Always allow user creation. """
+        return True
+
+    @staticmethod
+    @authenticated_users
+    def has_write_permission(request):
+        """ Leave handling of update permissions to has_object_update_permission(). """
+        return True
+
+    @authenticated_users
+    @allow_staff_or_superuser
+    def has_object_update_permission(self, request):
+        """ Allow users to update only their own profile (except for staff, who edit any user). """
+        return self == request.user
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(_('email address'), blank=False, unique=True)
     description = models.TextField(
@@ -50,7 +79,7 @@ class UserLanguage(models.Model):
     @authenticated_users
     def has_write_permission(request):
         """ Leave handling of update and delete permissions to has_object_update_permission() and
-        has_object_destroy_permission() and has_object_destroy_permission(). """
+        has_object_destroy_permission(). """
         return True
 
     @authenticated_users

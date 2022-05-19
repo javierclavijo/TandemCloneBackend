@@ -34,7 +34,8 @@ class Channel(models.Model):
     @staticmethod
     @authenticated_users
     def has_write_permission(request):
-        """ Leave handling of update and delete permissions to has_object_update_permission(). """
+        """ Leave handling of update and delete permissions to has_object_update_permission() and
+        has_object_destroy_permission(). """
         return True
 
     @authenticated_users
@@ -102,7 +103,7 @@ class Membership(models.Model):
     @authenticated_users
     def has_write_permission(request):
         """ Leave handling of update and delete permissions to has_object_update_permission() and
-        has_object_destroy_permission() and has_object_destroy_permission(). """
+        has_object_destroy_permission(). """
         return True
 
     @authenticated_users

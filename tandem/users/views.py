@@ -57,6 +57,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
     serializer_class = UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     filterset_class = UserFilter
+    permission_classes = [DRYPermissions]
 
     # Disable PUT method, as it's not currently supported due to nested serializer fields
     http_method_names = ['get', 'post', 'patch', 'delete', 'head']
