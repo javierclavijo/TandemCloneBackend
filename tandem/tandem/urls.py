@@ -9,7 +9,7 @@ from chats.views import FriendChatViewSet, FriendChatMessageViewSet, \
     ChannelChatMessageViewSet
 from communities.views import ChannelViewSet, MembershipViewSet
 from users import views
-from users.views import LoginView, get_session_info, LogoutView
+from users.views import LoginView, get_session_info, LogoutView, SetPassword
 
 """tandem URL Configuration
 
@@ -39,9 +39,12 @@ router.register(r'channel_chat_messages', ChannelChatMessageViewSet)
 urlpatterns = [
                   path('api/', include(router.urls)),
                   path('api/admin/', admin.site.urls),
+
+                  # Auth views
                   path('api/login/', LoginView.as_view()),
                   path('api/logout/', LogoutView.as_view()),
                   path('api/session_info/', get_session_info),
+                  path('api/set_password/', SetPassword.as_view()),
 
                   # OpenAPI Documentation
                   path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

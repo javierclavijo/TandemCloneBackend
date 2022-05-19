@@ -9,7 +9,7 @@ from rest_framework import permissions, status, parsers, fields, mixins
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -36,10 +36,6 @@ from users.serializers import UserSerializer, UserLanguageSerializer, UserPasswo
     partial_update=extend_schema(
         description="Modifies the details of the specified user.",
     ),
-    set_password=extend_schema(
-        description="Sets the session's user's password",
-        request=UserPasswordUpdateSerializer,
-    )
 )
 class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
@@ -103,28 +99,6 @@ class UserViewSet(mixins.RetrieveModelMixin,
             languages is not a valid choice. """
             transaction.set_rollback(True)
             return Response({'nativeLanguages': [str(e)]}, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=True, methods=['patch'])
-    def set_password(self, request, *args, **kwargs):
-        """Update the user's password. Uses a custom serializer class."""
-        instance = self.get_object()
-        try:
-            password = request.data["password"]
-        except KeyError:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        # Filter the received request data to avoid setting unwanted data
-        data = {"password": password}
-        serializer = UserPasswordUpdateSerializer(instance, data=data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
 
 
 @extend_schema_view(
@@ -255,3 +229,33 @@ class LogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response(None, status.HTTP_204_NO_CONTENT)
+
+
+@permission_classes([permissions.IsAuthenticated, permissions.IsAdminUser])
+@extend_schema(
+    request=UserPasswordUpdateSerializer,
+    responses={
+        200: OpenApiResponse(description="Successful password change.",
+                             response=None),
+        400: OpenApiResponse(description="Required field not provided.",
+                             response=None)
+    }
+)
+class SetPassword(APIView):
+    """
+    Updates the session user's password.
+    """
+
+    def patch(self, request):
+        try:
+            password = request.data["password"]
+        except KeyError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter the received request data to avoid setting unwanted data
+        data = {"password": password}
+        serializer = UserPasswordUpdateSerializer(request.user, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.update(request.user, serializer.validated_data)
+
+        return Response(UserSerializer(request.user, context={'request': request}).data, status=status.HTTP_200_OK)
