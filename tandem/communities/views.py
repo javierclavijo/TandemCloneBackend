@@ -2,6 +2,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework import viewsets, parsers, mixins
+from rest_framework.decorators import action
 
 from chats.models import ChannelChatMessage
 from chats.serializers import ChannelChatMessageSerializer
@@ -28,6 +29,13 @@ from communities.serializers import ChannelSerializer
     ),
     destroy=extend_schema(
         description="Deletes the specified channel."
+    ),
+    discover=extend_schema(
+        parameters=[
+            OpenApiParameter('language', type=OpenApiTypes.UUID, many=True,
+                             description="One or multiple languages to filter channels by.  Available values : "
+                                         "DE, EN, ES, FR, IT", )
+        ]
     )
 )
 class ChannelViewSet(viewsets.ModelViewSet):
@@ -70,6 +78,13 @@ class ChannelViewSet(viewsets.ModelViewSet):
         serialized_message = ChannelChatMessageSerializer(message, context={'request': request})
         response.data['messages'].append(serialized_message.data)
         return response
+
+    @action(detail=False, methods=['get'])
+    def discover(self, request):
+        """ Returns a list of random channels which the user is not a member of. """
+        # Exclude channels that the session's user is a member of from the queryset and order it randomly.
+        self.queryset = self.Meta.model.objects.exclude(memberships__user=request.user).order_by('?')
+        return self.list(self, request)
 
 
 @extend_schema_view(

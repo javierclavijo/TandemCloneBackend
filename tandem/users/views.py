@@ -9,7 +9,7 @@ from rest_framework import permissions, status, parsers, fields, mixins
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken, APIView
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
@@ -27,7 +27,7 @@ from users.serializers import UserSerializer, UserLanguageSerializer, UserPasswo
         description="Returns a list of users.",
         parameters=[
             OpenApiParameter('levels', type=OpenApiTypes.STR, many=True,
-                             description="Filters users by the level of their learning (i.e. non-native) languages. "),
+                             description="Filters users by the level of their learning (i.e. non-native) languages."),
         ]
     ),
     create=extend_schema(
@@ -36,6 +36,17 @@ from users.serializers import UserSerializer, UserLanguageSerializer, UserPasswo
     partial_update=extend_schema(
         description="Modifies the details of the specified user.",
     ),
+    discover=extend_schema(
+        description="Returns a random list of users who aren't friends with the session's user.",
+        parameters=[
+            OpenApiParameter('native_language', type=OpenApiTypes.STR, many=True,
+                             description="Filters users by their native languages."),
+            OpenApiParameter('learning_language', type=OpenApiTypes.STR, many=True,
+                             description="Filters users by the languages they're learning."),
+            OpenApiParameter('levels', type=OpenApiTypes.STR, many=True,
+                             description="Filters users by the level of their learning (i.e. non-native) languages."),
+        ]
+    )
 )
 class UserViewSet(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
@@ -99,6 +110,13 @@ class UserViewSet(mixins.RetrieveModelMixin,
             languages is not a valid choice. """
             transaction.set_rollback(True)
             return Response({'nativeLanguages': [str(e)]}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'])
+    def discover(self, request):
+        """ Returns a list of random users which aren't friends of the session's user. """
+        # Exclude users who are friends with the session's user from the queryset and order it randomly.
+        self.queryset = self.Meta.model.objects.exclude(friend_chats__users=request.user).order_by('?')
+        return self.list(self, request)
 
 
 @extend_schema_view(
