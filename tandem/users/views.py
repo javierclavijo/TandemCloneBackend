@@ -8,11 +8,10 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_seriali
 from dry_rest_permissions.generics import DRYPermissions
 from rest_framework import permissions, status, parsers, fields, mixins
 from rest_framework import viewsets
-from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken, APIView
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from rest_framework.views import APIView
 
 from common.models import ProficiencyLevel, AvailableLanguage
 from users.filters import UserFilter
@@ -152,19 +151,6 @@ class UserLanguageViewSet(mixins.RetrieveModelMixin,
     permission_classes = [DRYPermissions]
 
 
-class ObtainAuthTokenWithIdAndUrl(ObtainAuthToken):
-    """
-    Returns the user's auth token, plus their ID and detail URL.
-    Source: https://stackoverflow.com/a/44457513
-    """
-
-    def post(self, request, *args, **kwargs):
-        response = super(ObtainAuthTokenWithIdAndUrl, self).post(request, *args, *kwargs)
-        token = Token.objects.get(key=response.data['token'])
-        url = request.build_absolute_uri(reverse('customuser-detail', kwargs={'pk': str(token.user.id)}))
-        return Response({'token': token.key, 'id': token.user_id, 'url': url})
-
-
 @extend_schema(
     responses={
         200: OpenApiResponse(response=inline_serializer(name="session_info_response", fields={
@@ -268,7 +254,7 @@ class SetPassword(APIView):
     """
     Updates the session user's password.
     """
-    
+
     def patch(self, request):
         try:
             new_password = request.data["newPassword"]

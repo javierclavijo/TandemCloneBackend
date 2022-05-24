@@ -7,7 +7,6 @@ from dry_rest_permissions.generics import authenticated_users, allow_staff_or_su
 from rest_framework.generics import get_object_or_404
 
 
-
 class AbstractChatMessage(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.TextField(
@@ -79,7 +78,6 @@ class ChannelChatMessage(AbstractChatMessage):
     def has_object_read_permission(self, request):
         """ Allow only channel members and staff to access the message's details. """
         return self.channel.memberships.filter(user=request.user).exists()
-
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(

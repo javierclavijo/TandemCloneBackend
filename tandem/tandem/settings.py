@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     # Library apps
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',
     'django_extensions',
     'channels',
     'django_filters',
