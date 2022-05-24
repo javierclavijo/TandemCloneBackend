@@ -250,7 +250,6 @@ class LogoutView(APIView):
         return Response(None, status.HTTP_204_NO_CONTENT)
 
 
-@permission_classes([permissions.IsAuthenticated, permissions.IsAdminUser])
 @extend_schema(
     request=inline_serializer("set_password_request", fields={
         "new_password": fields.CharField(),
@@ -269,11 +268,11 @@ class SetPassword(APIView):
     """
     Updates the session user's password.
     """
-
+    
     def patch(self, request):
         try:
-            new_password = request.data["new_password"]
-            old_password = request.data["old_password"]
+            new_password = request.data["newPassword"]
+            old_password = request.data["oldPassword"]
 
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
