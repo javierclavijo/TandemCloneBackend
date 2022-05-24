@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model, login, authenticate, logout
+from django.contrib.auth.hashers import check_password
 from django.db import transaction
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.types import OpenApiTypes
@@ -251,11 +252,16 @@ class LogoutView(APIView):
 
 @permission_classes([permissions.IsAuthenticated, permissions.IsAdminUser])
 @extend_schema(
-    request=UserPasswordUpdateSerializer,
+    request=inline_serializer("set_password_request", fields={
+        "new_password": fields.CharField(),
+        "old_password": fields.CharField(),
+    }),
     responses={
         200: OpenApiResponse(description="Successful password change.",
                              response=None),
         400: OpenApiResponse(description="Required field not provided.",
+                             response=None),
+        401: OpenApiResponse(description="Incorrect old password provided.",
                              response=None)
     }
 )
@@ -266,12 +272,18 @@ class SetPassword(APIView):
 
     def patch(self, request):
         try:
-            password = request.data["password"]
+            new_password = request.data["new_password"]
+            old_password = request.data["old_password"]
+
         except KeyError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        authenticated = check_password(old_password, request.user.password)
+        if not authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
         # Filter the received request data to avoid setting unwanted data
-        data = {"password": password}
+        data = {"password": new_password}
         serializer = UserPasswordUpdateSerializer(request.user, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.update(request.user, serializer.validated_data)
