@@ -42,7 +42,7 @@ class UserCrudTests(APITestCase):
 
         # Compare sorted lists of IDs
         # The endpoint returns paginated data, so we must specify a limit to the queryset
-        users_ids = list(self.user_model.objects.filter(username__icontains=params['username'])
+        users_ids = list(str(x) for x in self.user_model.objects.filter(username__icontains=params['username'])
                          .order_by('id')
                          .values_list('id', flat=True)[:10])
         response_ids = sorted([user['id'] for user in response.data['results']])
