@@ -37,12 +37,12 @@ class UserCrudTests(APITestCase):
         Tests if the queryset returned by the user list endpoint contains the correct users when filtering by username.
         """
         url = reverse('customuser-list')
-        params = {"username": "o"}
+        params = {"search": "o"}
         response = self.client.get(url, data=params)
 
         # Compare sorted lists of IDs
         # The endpoint returns paginated data, so we must specify a limit to the queryset
-        users_ids = list(str(x) for x in self.user_model.objects.filter(username__icontains=params['username'])
+        users_ids = list(str(x) for x in self.user_model.objects.filter(username__icontains=params['search'])
                          .order_by('id')
                          .values_list('id', flat=True)[:10])
         response_ids = sorted([user['id'] for user in response.data['results']])
@@ -81,15 +81,14 @@ class UserCrudTests(APITestCase):
         language and levels.
         """
         url = reverse('customuser-list')
-        params = {"foreignLanguage": "IT", "levels": "B2,C1"}
+        params = {"learning_language": "IT", "level": "BE"}
         response = self.client.get(url, data=params)
 
         # Compare sorted lists of IDs
         # The endpoint returns paginated data, so we must specify a limit to the queryset
-        levels_parts = params['levels'].split(',')
-        subquery = UserLanguage.objects.filter(language=params['foreignLanguage'], level__in=levels_parts) \
-            .exclude(level=ProficiencyLevel.NATIVE)
-        users_ids = list(self.user_model.objects.filter(pk__in=subquery.values_list('user', flat=True))
+        subquery = UserLanguage.objects.filter(language=params['learning_language'], level=params['level']).values_list(
+            'user', flat=True)
+        users_ids = list(str(x) for x in self.user_model.objects.filter(pk__in=subquery)
                          .order_by('id')
                          .values_list('id', flat=True)[:10])
 
@@ -97,7 +96,7 @@ class UserCrudTests(APITestCase):
         self.assertEqual(response_ids, users_ids)
 
         # Additionally, check that the count of found objects is correct
-        user_count = self.user_model.objects.filter(pk__in=subquery.values_list('user', flat=True)).count()
+        user_count = self.user_model.objects.filter(pk__in=subquery).count()
         self.assertEqual(response.data['count'], user_count)
 
     def test_user_detail_has_id_and_has_not_password(self):
