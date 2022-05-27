@@ -20,6 +20,14 @@ class AbstractChatMessage(models.Model):
         abstract = True
 
 
+def upload_to_friend_chat_message(instance, filename):
+    return f'friend_chat_messages/{instance.id}.{filename.split(".")[-1]}'
+
+
+def upload_to_channel_chat_message(instance, filename):
+    return f'channel_chat_messages/{instance.id}.{filename.split(".")[-1]}'
+
+
 class FriendChatMessage(AbstractChatMessage):
 
     @staticmethod
@@ -48,6 +56,8 @@ class FriendChatMessage(AbstractChatMessage):
         on_delete=models.CASCADE,
         related_name="sent_friend_chat_messages"
     )
+
+    image = models.ImageField(upload_to=upload_to_friend_chat_message, blank=True)
 
     class Meta:
         ordering = ['-timestamp']
@@ -90,6 +100,8 @@ class ChannelChatMessage(AbstractChatMessage):
         on_delete=models.CASCADE,
         related_name='messages'
     )
+
+    image = models.ImageField(upload_to=upload_to_channel_chat_message, blank=True)
 
     class Meta:
         ordering = ['-timestamp']
