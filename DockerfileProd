@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1
+FROM python:3
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+WORKDIR /code
+COPY requirements.prod.txt /code/
+RUN pip install -r requirements.prod.txt
+COPY /tandem /code/
+COPY wait /
+RUN chmod +x /wait
+
+
+# Source: https://docs.docker.com/samples/django/

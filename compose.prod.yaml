@@ -18,8 +18,10 @@ services:
       - redis-volume:/data
 
   api:
-    build: .
-    command: sh -c "/wait && python /code/manage.py runserver 0.0.0.0:8000"
+    build:
+      context: .
+      dockerfile: DockerfileProd
+    command: sh -c "/wait && cd /code && daphne -b 0.0.0.0 tandem.asgi:application"
     expose:
       - "8000"
     environment:
